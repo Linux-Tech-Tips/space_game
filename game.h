@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include <raylib.h>
+#include <raymath.h>
 #include <math.h>
 
 /* Temporarily containing all the relevant game data for the demo version
@@ -24,6 +25,8 @@ typedef struct {
     Texture2D ship;
     Texture2D background;
 
+    Camera2D camera;
+
 } game_data_t;
 
 /* Update functions */
@@ -35,6 +38,8 @@ void game_update(game_data_t * gameData);
 void game_render(game_data_t * gameData, int scrX, int scrY);
 
 /* Load/Unload functions */
+
+void game_initStructure(game_data_t * gameData);
 
 void game_loadTex(game_data_t * gameData);
 

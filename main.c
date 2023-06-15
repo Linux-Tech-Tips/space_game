@@ -41,7 +41,7 @@ void main_update(main_appData_t * appData, screen_guiData_t * guiData, game_data
     appData->scrY = GetRenderHeight();
 
     /* Updating screen based on the current screenId */
-    screen_update(&appData->screenId, &appData->runWindow, &appData->screenLoaded, guiData, gameData);
+    screen_update(&appData->screenId, &appData->runWindow, &appData->screenLoaded, appData->scrX, appData->scrY, guiData, gameData);
 }
 
 /** 
@@ -51,9 +51,9 @@ void main_render(main_appData_t appData, screen_guiData_t * guiData, game_data_t
     
     BeginDrawing();
 
-    ClearBackground((Color){10, 10, 10, 255});
+        ClearBackground((Color){10, 10, 10, 255});
 
-    screen_render(appData.screenId, appData.scrX, appData.scrY, guiData, gameData);
+        screen_render(appData.screenId, appData.screenLoaded, appData.scrX, appData.scrY, guiData, gameData);
 
     EndDrawing();
 }
@@ -69,9 +69,11 @@ int main() {
 
     main_appData_t appData = { .runWindow = 1, .screenId = title };
 
-    screen_guiData_t guiData = {};
+    screen_guiData_t guiData = {0};
 
-    game_data_t gameData = { .paused = 0, .posX = 100, .posY = 100, .rot = 0, .accel = 200, .angAccel = 30, .rcsAccel = 60, .throttle = 100 };
+    //game_data_t gameData = { .paused = 0, .posX = 100, .posY = 100, .rot = 0, .accel = 200, .angAccel = 30, .rcsAccel = 60, .throttle = 100 };
+    game_data_t gameData = {0};
+    game_initStructure(&gameData);
 
     while(appData.runWindow) {
         main_update(&appData, &guiData, &gameData);

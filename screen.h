@@ -19,21 +19,21 @@ typedef struct {
     
     short title_button1, title_button2, title_button3;
 
-    short game_button1;
+    short game_button1, game_button2;
 
 } screen_guiData_t;
 
 /* Update functions */
 
-void screen_update(screen_id_t * id, short * runWindow, short * loaded, screen_guiData_t * guiData, game_data_t * gameData);
+void screen_update(screen_id_t * id, short * runWindow, short * loaded, int scrX, int scrY, screen_guiData_t * guiData, game_data_t * gameData);
 
 void _screen_update_title(screen_id_t * id, short * runWindow, short * loaded, screen_guiData_t * guiData);
 
-void _screen_update_game(screen_id_t * id, short * runWindow, short * loaded, screen_guiData_t * guiData, game_data_t * gameData);
+void _screen_update_game(screen_id_t * id, short * runWindow, short * loaded, int scrX, int scrY, screen_guiData_t * guiData, game_data_t * gameData);
 
 /* Render functions */
 
-void screen_render(screen_id_t id, int scrX, int scrY, screen_guiData_t * guiData, game_data_t * gameData);
+void screen_render(screen_id_t id, short loaded, int scrX, int scrY, screen_guiData_t * guiData, game_data_t * gameData);
 
 void _screen_render_title(int scrX, int scrY, screen_guiData_t * guiData);
 

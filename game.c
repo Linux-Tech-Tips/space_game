@@ -94,20 +94,40 @@ void game_update(game_data_t * gameData) {
 
 void game_render(game_data_t * gameData, int scrX, int scrY) {
 
-    DrawTextureEx(gameData->background, (Vector2){0, 0}, 0, (scrX/1600.0f), WHITE);
+    BeginMode2D(gameData->camera);
 
-    //DrawTextureEx(gameData->ship, (Vector2){gameData->posX, gameData->posY}, gameData->rot, 1, WHITE);
+        DrawTextureEx(gameData->background, (Vector2){0, 0}, 0, (scrX/1600.0f), WHITE);
 
-    int posX = gameData->posX;
-    int posY = gameData->posY;
-    int shipW = gameData->ship.width;
-    int shipH = gameData->ship.height;
+        int posX = gameData->posX;
+        int posY = gameData->posY;
+        int shipW = gameData->ship.width;
+        int shipH = gameData->ship.height;
 
-    DrawTexturePro(gameData->ship, (Rectangle){0, 0, shipW, shipH}, (Rectangle){posX, posY, shipW, shipH}, (Vector2){shipW/2, shipH/2}, gameData->rot, WHITE);
+        DrawTexturePro(gameData->ship, (Rectangle){0, 0, shipW, shipH}, (Rectangle){posX, posY, shipW, shipH}, (Vector2){shipW/2, shipH/2}, gameData->rot, WHITE);
 
+    EndMode2D();
 }
 
 /* Load/Unload functions */
+
+void game_initStructure(game_data_t * gameData) {
+    gameData->paused = 0;
+    
+    gameData->posX = 100;
+    gameData->posY = 100;
+    gameData->rot = 0;
+
+    gameData->velocity = Vector2Zero();
+    gameData->angMoment = 0;
+
+    gameData->accel = 200;
+    gameData->angAccel = 30;
+    gameData->rcsAccel = 60;
+    gameData->throttle = 100;
+
+    gameData->camera = (Camera2D){0};
+    gameData->camera.zoom = 1;
+}
 
 void game_loadTex(game_data_t * gameData) {
     gameData->background = LoadTexture("res/bg.png");
