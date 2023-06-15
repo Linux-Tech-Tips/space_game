@@ -98,17 +98,18 @@ void _screen_render_game(int scrX, int scrY, screen_guiData_t * guiData, game_da
 
     DrawText("INCOMPLETE (DEMONSTRATION) VERSION", screen_textCenter("INCOMPLETE (DEMONSTRATION) VERSION", 40, scrX), 15, 40, WHITE);
 
-    DrawText("Controls:", 10, scrY-120, 20, WHITE);
-    DrawText("W/S - Accelerate forwards/backwards", 10, scrY-100, 20, WHITE);
-    DrawText("A/D - Turn ship around", 10, scrY-80, 20, WHITE);
-    DrawText("Q/E - Accelerate sideways", 10, scrY-60, 20, WHITE);
+    DrawText("Controls:", 10, scrY-140, 20, WHITE);
+    DrawText("W/S - Accelerate forwards/backwards", 10, scrY-120, 20, WHITE);
+    DrawText("A/D - Turn ship around", 10, scrY-100, 20, WHITE);
+    DrawText("Q/E - Accelerate sideways", 10, scrY-80, 20, WHITE);
+    DrawText("1/2/3/4/5 - Throttle (20%/40%/60%/80%/100%)", 10, scrY-60, 20, WHITE);
     DrawText("SHIFT - Kill velocity and angular momentum", 10, scrY-40, 20, WHITE);
     DrawText("R - Kill only angular momentum", 10, scrY-20, 20, WHITE);
 
     DrawText("Velocity direction:", scrX-(MeasureText("Velocity direction:", 20)+10), scrY-185, 20, WHITE);
     DrawCircle(scrX-80, scrY-120, 40, LIGHTGRAY);
     Vector2 startPoint = {scrX-80, scrY-120};
-    Vector2 endPoint = Vector2Add(startPoint, Vector2ClampValue(Vector2Scale(gameData->velocity, 0.15f), 0.0f, 40.0f));
+    Vector2 endPoint = Vector2Add(startPoint, Vector2Rotate(Vector2ClampValue(Vector2Scale(gameData->velocity, 0.15f), 0.0f, 40.0f), game_toRad(-gameData->rot - 90.0f)));
     DrawLineEx(startPoint, endPoint, 8, DARKBLUE);
     
     DrawText(TextFormat("Current velocity: %.2f", Vector2Length(gameData->velocity)), scrX - (MeasureText("Current velocity: 00000", 20)+10), scrY-60, 20, WHITE);

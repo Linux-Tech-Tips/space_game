@@ -62,3 +62,4 @@ help:
 	@echo "  - Available options:"
 	@echo "    - address=true - turn on address sanitizer"
 	@echo "    - RAYGUI=<path> - specify custom path to the raygui.h header"
+	@echo "        (note: default expected raygui path is ../raygui/src/raygui.h)"
