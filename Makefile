@@ -10,6 +10,10 @@ CFLAGS :=
 # Default linker flags to link with Raylib
 LDFLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
+ifdef RAYGUI
+	CFLAGS += -DRAYGUI_H_LOC=\"$(RAYGUI)\"
+endif
+
 ifeq ($(address), true)
 	CFLAGS += -fsanitize=address -g
 	LDFLAGS += -fsanitize=address -g
@@ -35,7 +39,7 @@ $(OUTFILE): $(OBJECTS)
 $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-.PHONY: dirs, compile, link, run, clean
+.PHONY: dirs, compile, link, run, clean, help
 
 # SRC_DIR is not made, expected to already exist
 dirs:
@@ -52,3 +56,9 @@ clean:
 	rm -r $(BUILD_DIR)
 	rm -f $(OUTFILE)
 
+help:
+	@echo "Demo space game Makefile: make [target] [options]"
+	@echo "  - Available targets: dirs, compile, link, run, clean, help, all (default, does dirs, compile and link)"
+	@echo "  - Available options:"
+	@echo "    - address=true - turn on address sanitizer"
+	@echo "    - RAYGUI=<path> - specify custom path to the raygui.h header"

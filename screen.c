@@ -2,7 +2,11 @@
 
 /* Should be included here to prevent linker errors - only in the .c file in which raygui is used */
 #define RAYGUI_IMPLEMENTATION
+#ifdef RAYGUI_H_LOC
+#include RAYGUI_H_LOC
+#else
 #include "../raygui/src/raygui.h"
+#endif
 
 /* Update functions */
 
