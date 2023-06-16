@@ -65,7 +65,7 @@ void game_update(game_data_t * gameData) {
             gameData->angMoment -= game_sign(gameData->angMoment) * gameData->angAccel * GetFrameTime();
         else
             gameData->angMoment = 0;
-    } else if(IsKeyDown(KEY_R)) {
+    } else if(IsKeyDown(KEY_R) || (gameData->dampenAng && !(IsKeyDown(KEY_A) || IsKeyDown(KEY_D)))) {
         if(abs(gameData->angMoment) > 1)
             gameData->angMoment -= game_sign(gameData->angMoment) * gameData->angAccel * GetFrameTime();
         else
@@ -76,17 +76,21 @@ void game_update(game_data_t * gameData) {
     gameData->posY += gameData->velocity.y * GetFrameTime();
     gameData->rot += gameData->angMoment * GetFrameTime();
 
-    /* Temporary out of screen checks */
-    if(gameData->posX > (GetScreenWidth() + 128))
-        gameData->posX = -128;
-    if(gameData->posY > (GetScreenHeight() + 128))
-        gameData->posY = -128;
-    
-    if(gameData->posX < -128)
-        gameData->posX = (GetScreenWidth() + 128);
-    if(gameData->posY < -128)
-        gameData->posY = (GetScreenHeight() + 128);
-    
+    /* Background offset updating */
+    gameData->bgOffsetX -= gameData->velocity.x * gameData->bgScrollMul * GetFrameTime();
+    gameData->bgOffsetY -= gameData->velocity.y * gameData->bgScrollMul * GetFrameTime();
+
+    int bgW = gameData->background.width;
+    int bgH = gameData->background.height;
+
+    if(gameData->bgOffsetX > bgW)
+        gameData->bgOffsetX -= bgW;
+    else if(gameData->bgOffsetX < 0)
+        gameData->bgOffsetX += bgW;
+    if(gameData->bgOffsetY > bgH)
+        gameData->bgOffsetY -= bgH;
+    else if(gameData->bgOffsetY < 0)
+        gameData->bgOffsetY += bgH;  
 
 }
 
@@ -96,12 +100,17 @@ void game_render(game_data_t * gameData, int scrX, int scrY) {
 
     BeginMode2D(gameData->camera);
 
-        DrawTextureEx(gameData->background, (Vector2){0, 0}, 0, (scrX/1600.0f), WHITE);
+        //DrawTextureEx(gameData->background, (Vector2){-scrX*1.5f, -scrY*1.5f}, 0, 3*(scrX/1600.0f), WHITE);
 
-        int posX = gameData->posX;
-        int posY = gameData->posY;
+        float posX = gameData->posX;
+        float posY = gameData->posY;
         int shipW = gameData->ship.width;
         int shipH = gameData->ship.height;
+
+        int bgW = gameData->background.width;
+        int bgH = gameData->background.height;
+
+        DrawTextureQuad(gameData->background, (Vector2){9, 9}, (Vector2){0, 0}, (Rectangle){posX - 4.5f*bgW + gameData->bgOffsetX, posY - 4.5f*bgH + gameData->bgOffsetY, 9*bgW, 9*bgH}, WHITE);
 
         DrawTexturePro(gameData->ship, (Rectangle){0, 0, shipW, shipH}, (Rectangle){posX, posY, shipW, shipH}, (Vector2){shipW/2, shipH/2}, gameData->rot, WHITE);
 
@@ -125,8 +134,14 @@ void game_initStructure(game_data_t * gameData) {
     gameData->rcsAccel = 60;
     gameData->throttle = 100;
 
+    gameData->dampenAng = 1;
+
+    gameData->bgOffsetX = 0;
+    gameData->bgOffsetY = 0;
+    gameData->bgScrollMul = 0.25f;
+
     gameData->camera = (Camera2D){0};
-    gameData->camera.zoom = 1;
+    gameData->camera.zoom = 1.0f;
 }
 
 void game_loadTex(game_data_t * gameData) {

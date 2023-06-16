@@ -58,6 +58,14 @@ void _screen_update_game(screen_id_t * id, short * runWindow, short * loaded, in
     gameData->camera.offset.y = scrY/2.0f;
     gameData->camera.rotation = -90.0f - gameData->rot;
 
+    /* Camera zoom controls */
+    if(IsKeyDown(KEY_UP) && (gameData->camera.zoom < 2)) {
+        gameData->camera.zoom += 0.5f * GetFrameTime();
+    }
+    if(IsKeyDown(KEY_DOWN) && (gameData->camera.zoom > 0.5f)) {
+        gameData->camera.zoom -= 0.5f * GetFrameTime();
+    }
+
     if(!gameData->paused)
         game_update(gameData);
 

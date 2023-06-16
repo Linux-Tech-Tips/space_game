@@ -22,8 +22,13 @@ typedef struct {
     float rcsAccel;
     int throttle;
 
+    short dampenAng;
+
     Texture2D ship;
     Texture2D background;
+
+    float bgOffsetX, bgOffsetY;
+    float bgScrollMul;
 
     Camera2D camera;
 
