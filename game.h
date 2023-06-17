@@ -25,10 +25,11 @@ typedef struct {
     short dampenAng;
 
     Texture2D ship;
-    Texture2D background;
 
-    float bgOffsetX, bgOffsetY;
-    float bgScrollMul;
+    /* Backgrounds + scroll */
+    Texture2D background [3];
+    float bgOffsetX [3], bgOffsetY [3];
+    float bgScrollMul [3];
 
     Camera2D camera;
 

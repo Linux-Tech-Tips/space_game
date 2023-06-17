@@ -76,21 +76,23 @@ void game_update(game_data_t * gameData) {
     gameData->posY += gameData->velocity.y * GetFrameTime();
     gameData->rot += gameData->angMoment * GetFrameTime();
 
-    /* Background offset updating */
-    gameData->bgOffsetX -= gameData->velocity.x * gameData->bgScrollMul * GetFrameTime();
-    gameData->bgOffsetY -= gameData->velocity.y * gameData->bgScrollMul * GetFrameTime();
+    /* Backgrounds offset updating */
+    for(int i = 0; i < 3; i++) {
+        gameData->bgOffsetX[i] -= gameData->velocity.x * gameData->bgScrollMul[i] * GetFrameTime();
+        gameData->bgOffsetY[i] -= gameData->velocity.y * gameData->bgScrollMul[i] * GetFrameTime();
 
-    int bgW = gameData->background.width;
-    int bgH = gameData->background.height;
+        int bgW = gameData->background[i].width;
+        int bgH = gameData->background[i].height;
 
-    if(gameData->bgOffsetX > bgW)
-        gameData->bgOffsetX -= bgW;
-    else if(gameData->bgOffsetX < 0)
-        gameData->bgOffsetX += bgW;
-    if(gameData->bgOffsetY > bgH)
-        gameData->bgOffsetY -= bgH;
-    else if(gameData->bgOffsetY < 0)
-        gameData->bgOffsetY += bgH;  
+        if(gameData->bgOffsetX[i] > bgW)
+            gameData->bgOffsetX[i] -= bgW;
+        else if(gameData->bgOffsetX[i] < 0)
+            gameData->bgOffsetX[i] += bgW;
+        if(gameData->bgOffsetY[i] > bgH)
+            gameData->bgOffsetY[i] -= bgH;
+        else if(gameData->bgOffsetY[i] < 0)
+            gameData->bgOffsetY[i] += bgH;
+    }
 
 }
 
@@ -107,10 +109,13 @@ void game_render(game_data_t * gameData, int scrX, int scrY) {
         int shipW = gameData->ship.width;
         int shipH = gameData->ship.height;
 
-        int bgW = gameData->background.width;
-        int bgH = gameData->background.height;
+        /* Drawing backgrounds */
+        for(int i = 0; i < 3; i++) {
+            int bgW = gameData->background[i].width;
+            int bgH = gameData->background[i].height;
 
-        DrawTextureQuad(gameData->background, (Vector2){9, 9}, (Vector2){0, 0}, (Rectangle){posX - 4.5f*bgW + gameData->bgOffsetX, posY - 4.5f*bgH + gameData->bgOffsetY, 9*bgW, 9*bgH}, WHITE);
+            DrawTextureQuad(gameData->background[i], (Vector2){9, 9}, (Vector2){0, 0}, (Rectangle){posX - 4.5f*bgW + gameData->bgOffsetX[i], posY - 4.5f*bgH + gameData->bgOffsetY[i], 9*bgW, 9*bgH}, WHITE);
+        }
 
         DrawTexturePro(gameData->ship, (Rectangle){0, 0, shipW, shipH}, (Rectangle){posX, posY, shipW, shipH}, (Vector2){shipW/2, shipH/2}, gameData->rot, WHITE);
 
@@ -136,21 +141,29 @@ void game_initStructure(game_data_t * gameData) {
 
     gameData->dampenAng = 1;
 
-    gameData->bgOffsetX = 0;
-    gameData->bgOffsetY = 0;
-    gameData->bgScrollMul = 0.25f;
+    for(int i = 0; i < 3; i++) {
+        gameData->bgOffsetX[i] = 0;
+        gameData->bgOffsetY[i] = 0;
+    }
+    gameData->bgScrollMul[0] = 0.15f;
+    gameData->bgScrollMul[1] = 0.25f;
+    gameData->bgScrollMul[2] = 0.4f;
 
     gameData->camera = (Camera2D){0};
     gameData->camera.zoom = 1.0f;
 }
 
 void game_loadTex(game_data_t * gameData) {
-    gameData->background = LoadTexture("res/bg.png");
+    gameData->background[0] = LoadTexture("res/bg_far.png");
+    gameData->background[1] = LoadTexture("res/bg_mid.png");
+    gameData->background[2] = LoadTexture("res/bg_near.png");
     gameData->ship = LoadTexture("res/ship.png");
 }
 
 void game_unloadTex(game_data_t * gameData) {
-    UnloadTexture(gameData->background);
+    UnloadTexture(gameData->background[0]);
+    UnloadTexture(gameData->background[1]);
+    UnloadTexture(gameData->background[2]);
     UnloadTexture(gameData->ship);
 }
 
