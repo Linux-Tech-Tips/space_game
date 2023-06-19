@@ -114,7 +114,7 @@ void game_render(game_data_t * gameData, int scrX, int scrY) {
             int bgW = gameData->background[i].width;
             int bgH = gameData->background[i].height;
 
-            DrawTextureQuad(gameData->background[i], (Vector2){9, 9}, (Vector2){0, 0}, (Rectangle){posX - 4.5f*bgW + gameData->bgOffsetX[i], posY - 4.5f*bgH + gameData->bgOffsetY[i], 9*bgW, 9*bgH}, WHITE);
+            DrawTexturePro(gameData->background[i], (Rectangle){0, 0, 9*bgW, 9*bgH}, (Rectangle){posX - 4.5f*bgW + gameData->bgOffsetX[i], posY - 4.5f*bgH + gameData->bgOffsetY[i], 9*bgW, 9*bgH}, (Vector2){0, 0}, 0, WHITE);
         }
 
         DrawTexturePro(gameData->ship, (Rectangle){0, 0, shipW, shipH}, (Rectangle){posX, posY, shipW, shipH}, (Vector2){shipW/2, shipH/2}, gameData->rot, WHITE);
