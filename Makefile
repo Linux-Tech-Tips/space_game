@@ -10,10 +10,18 @@ CFLAGS :=
 # Default linker flags to link with Raylib
 LDFLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
+# Custom Raygui path
 ifdef RAYGUI
 	CFLAGS += -DRAYGUI_H_LOC=\"$(RAYGUI)\"
 endif
 
+# Custom Raylib path
+ifdef RAYLIB_PATH
+	CFLAGS += -L$(RAYLIB_PATH)/lib -I$(RAYLIB_PATH)/include
+	LDFLAGS += -L$(RAYLIB_PATH)/lib -I$(RAYLIB_PATH)/include
+endif
+
+# Address sanitizer flags (if enabled)
 ifeq ($(address), true)
 	CFLAGS += -fsanitize=address -g
 	LDFLAGS += -fsanitize=address -g
@@ -63,3 +71,6 @@ help:
 	@echo "    - address=true - turn on address sanitizer"
 	@echo "    - RAYGUI=<path> - specify custom path to the raygui.h header"
 	@echo "        (note: default expected raygui path is ../raygui/src/raygui.h)"
+	@echo "    - RAYLIB_PATH=<path> - specify path to custom portable raylib location"
+	@echo "        (note: expects a path to the 'raylib' folder without trailing slash, containing lib and include)"
+	@echo "        (note: by default, this flag isn't set and the makefile expects raylib installed in the system)"
