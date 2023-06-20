@@ -5,7 +5,7 @@
 #ifdef RAYGUI_H_LOC
 #include RAYGUI_H_LOC
 #else
-#include "../raygui/src/raygui.h"
+#include "../../raygui/src/raygui.h"
 #endif
 
 /* Update functions */

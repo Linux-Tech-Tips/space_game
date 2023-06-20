@@ -4,14 +4,16 @@
 #include "game.h"
 
 /* 
-    TODO
+    TODO Modules
         main.c -> general application data + general application update/render
         screen.c/screen.h -> functions to update and render specific screens, perhaps if the functions got too long, could be split into a file for each screen
         game.c/game.h -> general game data, anything that's needed for the gameplay specifically
         player.c/player.h -> player data structure, update/render + make sure to think through and include ship customization and damage
         enemy.c/enemy.h -> enemy data structure, update/render, different enemies, varying stats based on structure data
+    TODO General
+        Add proper documentation comments
     
-    - WIP Version 2306_alpha14
+    - WIP Version 2306_alpha
     - Anything here is subject to change
 */
 
@@ -71,7 +73,6 @@ int main() {
 
     screen_guiData_t guiData = {0};
 
-    //game_data_t gameData = { .paused = 0, .posX = 100, .posY = 100, .rot = 0, .accel = 200, .angAccel = 30, .rcsAccel = 60, .throttle = 100 };
     game_data_t gameData = {0};
     game_initStructure(&gameData);
 

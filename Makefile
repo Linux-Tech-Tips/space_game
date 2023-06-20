@@ -3,6 +3,7 @@
 # Important variables which the build process depends on
 CC := gcc
 BUILD_DIR := build
+SOURCE_DIR := src
 
 # Default compiler flags (none for now)
 CFLAGS :=
@@ -27,9 +28,13 @@ ifeq ($(address), true)
 	LDFLAGS += -fsanitize=address -g
 endif
 
-SOURCES := $(wildcard *.c)
-OBJECTS := $(SOURCES:%.c=$(BUILD_DIR)/%.o)
+# These variables are needed for the compile and link PHONY targets - which implicit rules to call
+SOURCES := $(shell find $(SOURCE_DIR) -name *.c) # For any windows versions, the Cygwin find utility is required
+OBJECTS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(SOURCES)))
 OUTFILE := space_test.elf
+
+# Search path for the pattern rule
+VPATH := $(shell find $(SOURCE_DIR) -type d)
 
 # Windows-specific variable changes (WORK IN PROGRESS, under testing)
 ifeq ($(OS), Windows_NT)
@@ -49,7 +54,7 @@ $(BUILD_DIR)/%.o: %.c
 
 .PHONY: dirs, compile, link, run, clean, help
 
-# SRC_DIR is not made, expected to already exist
+# SOURCE_DIR is not made, expected to already exist
 dirs:
 	mkdir -p $(BUILD_DIR)
 
@@ -70,7 +75,7 @@ help:
 	@echo "  - Available options:"
 	@echo "    - address=true - turn on address sanitizer"
 	@echo "    - RAYGUI=<path> - specify custom path to the raygui.h header"
-	@echo "        (note: default expected raygui path is ../raygui/src/raygui.h)"
+	@echo "        (note: default expected raygui path is ../../raygui/src/raygui.h)"
 	@echo "    - RAYLIB_PATH=<path> - specify path to custom portable raylib location"
 	@echo "        (note: expects a path to the 'raylib' folder without trailing slash, containing lib and include)"
 	@echo "        (note: by default, this flag isn't set and the makefile expects raylib installed in the system)"
