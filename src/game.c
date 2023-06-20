@@ -4,6 +4,8 @@
 
 void game_update(game_data_t * gameData) {
 
+    /* Player logic - TODO Move into separate module */
+
     /* Throttle setting */
     switch(GetKeyPressed()) {
         case KEY_ONE:
@@ -28,19 +30,19 @@ void game_update(game_data_t * gameData) {
 
     /* Moving ship */
     if(IsKeyDown(KEY_W)) {
-        gameData->velocity.x += tAccel * cos(game_toRad(gameData->rot)) * GetFrameTime();
-        gameData->velocity.y += tAccel * sin(game_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.x += tAccel * cos(util_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.y += tAccel * sin(util_toRad(gameData->rot)) * GetFrameTime();
         angAccel += tAccel;
     } else if(IsKeyDown(KEY_S)) {
-        gameData->velocity.x -= gameData->rcsAccel * cos(game_toRad(gameData->rot)) * GetFrameTime();
-        gameData->velocity.y -= gameData->rcsAccel * sin(game_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.x -= gameData->rcsAccel * cos(util_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.y -= gameData->rcsAccel * sin(util_toRad(gameData->rot)) * GetFrameTime();
     }
     if(IsKeyDown(KEY_Q)) {
-        gameData->velocity.x += gameData->rcsAccel * sin(game_toRad(gameData->rot)) * GetFrameTime();
-        gameData->velocity.y -= gameData->rcsAccel * cos(game_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.x += gameData->rcsAccel * sin(util_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.y -= gameData->rcsAccel * cos(util_toRad(gameData->rot)) * GetFrameTime();
     } else if(IsKeyDown(KEY_E)) {
-        gameData->velocity.x -= gameData->rcsAccel * sin(game_toRad(gameData->rot)) * GetFrameTime();
-        gameData->velocity.y += gameData->rcsAccel * cos(game_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.x -= gameData->rcsAccel * sin(util_toRad(gameData->rot)) * GetFrameTime();
+        gameData->velocity.y += gameData->rcsAccel * cos(util_toRad(gameData->rot)) * GetFrameTime();
     }
 
     /* Rotating ship */
@@ -54,20 +56,20 @@ void game_update(game_data_t * gameData) {
     /* Velocity dampening */
     if(IsKeyDown(KEY_LEFT_SHIFT)) {
         if(abs(gameData->velocity.x) > 1)
-            gameData->velocity.x -= game_sign(gameData->velocity.x) * gameData->rcsAccel * GetFrameTime();
+            gameData->velocity.x -= util_sign(gameData->velocity.x) * gameData->rcsAccel * GetFrameTime();
         else
             gameData->velocity.x = 0;
         if(abs(gameData->velocity.y) > 1)
-            gameData->velocity.y -= game_sign(gameData->velocity.y) * gameData->rcsAccel * GetFrameTime();
+            gameData->velocity.y -= util_sign(gameData->velocity.y) * gameData->rcsAccel * GetFrameTime();
         else
             gameData->velocity.y = 0;
         if(abs(gameData->angMoment) > 1)
-            gameData->angMoment -= game_sign(gameData->angMoment) * gameData->angAccel * GetFrameTime();
+            gameData->angMoment -= util_sign(gameData->angMoment) * gameData->angAccel * GetFrameTime();
         else
             gameData->angMoment = 0;
     } else if(IsKeyDown(KEY_R) || (gameData->dampenAng && !(IsKeyDown(KEY_A) || IsKeyDown(KEY_D)))) {
         if(abs(gameData->angMoment) > 1)
-            gameData->angMoment -= game_sign(gameData->angMoment) * gameData->angAccel * GetFrameTime();
+            gameData->angMoment -= util_sign(gameData->angMoment) * gameData->angAccel * GetFrameTime();
         else
             gameData->angMoment = 0;
     }
@@ -76,7 +78,8 @@ void game_update(game_data_t * gameData) {
     gameData->posY += gameData->velocity.y * GetFrameTime();
     gameData->rot += gameData->angMoment * GetFrameTime();
 
-    /* Backgrounds offset updating */
+
+    /* Backgrounds scroll (offset updating) */
     for(int i = 0; i < 3; i++) {
         gameData->bgOffsetX[i] -= gameData->velocity.x * gameData->bgScrollMul[i] * GetFrameTime();
         gameData->bgOffsetY[i] -= gameData->velocity.y * gameData->bgScrollMul[i] * GetFrameTime();
@@ -100,10 +103,10 @@ void game_update(game_data_t * gameData) {
 
 void game_render(game_data_t * gameData, int scrX, int scrY) {
 
+    /* Using a Raylib 2D camera mode for rendering */
     BeginMode2D(gameData->camera);
 
-        //DrawTextureEx(gameData->background, (Vector2){-scrX*1.5f, -scrY*1.5f}, 0, 3*(scrX/1600.0f), WHITE);
-
+        /* Local variables to make background render more clear */
         float posX = gameData->posX;
         float posY = gameData->posY;
         int shipW = gameData->ship.width;
@@ -117,6 +120,9 @@ void game_render(game_data_t * gameData, int scrX, int scrY) {
             DrawTexturePro(gameData->background[i], (Rectangle){0, 0, 9*bgW, 9*bgH}, (Rectangle){posX - 4.5f*bgW + gameData->bgOffsetX[i], posY - 4.5f*bgH + gameData->bgOffsetY[i], 9*bgW, 9*bgH}, (Vector2){0, 0}, 0, WHITE);
         }
 
+        /* Render everything on top of background only after background */
+
+        /* Drawing player - TODO Move to separate module */
         DrawTexturePro(gameData->ship, (Rectangle){0, 0, shipW, shipH}, (Rectangle){posX, posY, shipW, shipH}, (Vector2){shipW/2, shipH/2}, gameData->rot, WHITE);
 
     EndMode2D();
@@ -125,6 +131,7 @@ void game_render(game_data_t * gameData, int scrX, int scrY) {
 /* Load/Unload functions */
 
 void game_initStructure(game_data_t * gameData) {
+    /* Default values - TODO Move player default values away */
     gameData->paused = 0;
     
     gameData->posX = 100;
@@ -165,19 +172,4 @@ void game_unloadTex(game_data_t * gameData) {
     UnloadTexture(gameData->background[1]);
     UnloadTexture(gameData->background[2]);
     UnloadTexture(gameData->ship);
-}
-
-/* Utility functions */
-
-float game_toRad(float deg) {
-    return (deg * (PI/180));
-}
-
-int game_sign(float val) {
-    if(val > 0)
-        return 1;
-    else if(val < 0)
-        return -1;
-    else
-        return 0;
 }

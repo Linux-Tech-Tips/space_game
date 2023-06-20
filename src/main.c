@@ -3,54 +3,38 @@
 #include "screen.h"
 #include "game.h"
 
-/* 
-    TODO Modules
-        main.c -> general application data + general application update/render
-        screen.c/screen.h -> functions to update and render specific screens, perhaps if the functions got too long, could be split into a file for each screen
-        game.c/game.h -> general game data, anything that's needed for the gameplay specifically
-        player.c/player.h -> player data structure, update/render + make sure to think through and include ship customization and damage
-        enemy.c/enemy.h -> enemy data structure, update/render, different enemies, varying stats based on structure data
-    TODO General
-        Add proper documentation comments
-    
-    - WIP Version 2306_alpha
-    - Anything here is subject to change
-*/
-
 /** 
  * Main application data structure, contains data related to the app itself and not gameplay
 */
 typedef struct {
-
+    /** Set to false anywhere to close the window */
     short runWindow;
+    /** The current screen (screen_id_t enum) to update and draw */
     screen_id_t screenId;
+    /** Is set to true once loading of the current screen is completed */
     short screenLoaded;
 
+    /** Viewport dimensions */
     int scrX, scrY;
 
 } main_appData_t;
 
-/**
- * Main application update function
- */
+/** Main application update function, all further updating within */
 void main_update(main_appData_t * appData, screen_guiData_t * guiData, game_data_t * gameData) {
     
     /* Closing window if requested */
     appData->runWindow = !WindowShouldClose();
 
-    /* Getting render size */
     appData->scrX = GetRenderWidth();
     appData->scrY = GetRenderHeight();
 
-    /* Updating screen based on the current screenId */
     screen_update(&appData->screenId, &appData->runWindow, &appData->screenLoaded, appData->scrX, appData->scrY, guiData, gameData);
 }
 
-/** 
- * Main application render function
-*/
+/** Main application render function, all further drawing within */
 void main_render(main_appData_t appData, screen_guiData_t * guiData, game_data_t * gameData) {
-    
+
+    /* All drawing should be enclosed in Raylib BeginDrawing() and EndDrawing() calls */
     BeginDrawing();
 
         ClearBackground((Color){10, 10, 10, 255});
@@ -63,19 +47,19 @@ void main_render(main_appData_t appData, screen_guiData_t * guiData, game_data_t
 
 int main() {
 
-    /* Raylib init */
+    /* Raylib initialization */
     InitWindow(1600, 900, "Space test");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetExitKey(0);
     SetTargetFPS(120);
 
+    /* All important data structure instances */
     main_appData_t appData = { .runWindow = 1, .screenId = title };
-
     screen_guiData_t guiData = {0};
-
     game_data_t gameData = {0};
     game_initStructure(&gameData);
 
+    /* Main loop */
     while(appData.runWindow) {
         main_update(&appData, &guiData, &gameData);
         main_render(appData, &guiData, &gameData);
