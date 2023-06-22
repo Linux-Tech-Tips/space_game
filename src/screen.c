@@ -57,11 +57,11 @@ void _screen_update_game(screen_id_t * id, short * runWindow, short * loaded, in
     }
 
     /* Camera update according to game */
-    gameData->camera.target.x = gameData->posX;
-    gameData->camera.target.y = gameData->posY;
+    gameData->camera.target.x = gameData->playerData.posX;
+    gameData->camera.target.y = gameData->playerData.posY;
     gameData->camera.offset.x = scrX/2.0f;
     gameData->camera.offset.y = scrY/2.0f;
-    gameData->camera.rotation = -90.0f - gameData->rot;
+    //gameData->camera.rotation = -90.0f - gameData->rot;
 
     /* Camera zoom controls */
     if(IsKeyDown(KEY_UP) && (gameData->camera.zoom < 2)) {
@@ -109,7 +109,7 @@ void _screen_render_title(int scrX, int scrY, screen_guiData_t * guiData) {
 
 void _screen_render_game(int scrX, int scrY, screen_guiData_t * guiData, game_data_t * gameData) {
 
-    game_render(gameData, scrX, scrY);
+    game_render(gameData);
 
     /* Demo reminder up top */
     DrawText("INCOMPLETE (DEMONSTRATION) VERSION", screen_textCenter("INCOMPLETE (DEMONSTRATION) VERSION", 40, scrX), 15, 40, WHITE);
@@ -120,7 +120,7 @@ void _screen_render_game(int scrX, int scrY, screen_guiData_t * guiData, game_da
     DrawText("A/D - Turn ship around", 10, scrY-120, 20, WHITE);
     DrawText("Q/E - Accelerate sideways", 10, scrY-100, 20, WHITE);
     DrawText("Arrow UP/DOWN - zoom in/out", 10, scrY-80, 20, WHITE);
-    DrawText("1/2/3/4/5 - Throttle (20%/40%/60%/80%/100%)", 10, scrY-60, 20, WHITE);
+    DrawText("Arrow LEFT/RIGHT - Throttle down/up", 10, scrY-60, 20, WHITE);
     DrawText("SHIFT - Kill velocity and angular momentum", 10, scrY-40, 20, WHITE);
     DrawText("R - Kill only angular momentum", 10, scrY-20, 20, WHITE);
 
@@ -128,12 +128,12 @@ void _screen_render_game(int scrX, int scrY, screen_guiData_t * guiData, game_da
     DrawText("Velocity direction:", scrX-(MeasureText("Velocity direction:", 20)+10), scrY-185, 20, WHITE);
     DrawCircle(scrX-80, scrY-120, 40, LIGHTGRAY);
     Vector2 startPoint = {scrX-80, scrY-120};
-    Vector2 endPoint = Vector2Add(startPoint, Vector2Rotate(Vector2ClampValue(Vector2Scale(gameData->velocity, 0.15f), 0.0f, 40.0f), util_toRad(-gameData->rot - 90.0f)));
+    Vector2 endPoint = Vector2Add(startPoint, Vector2ClampValue(Vector2Scale(gameData->playerData.velocity, 0.15f), 0.0f, 40.0f));
     DrawLineEx(startPoint, endPoint, 8, DARKBLUE);
     /* Velocity text display */
-    DrawText(TextFormat("Current velocity: %.2f", Vector2Length(gameData->velocity)), scrX - (MeasureText("Current velocity: 00000", 20)+10), scrY-60, 20, WHITE);
-    DrawText(TextFormat("Current angular momentum: %.2f", gameData->angMoment), scrX-(MeasureText("Current angular momentum: 00000", 20)+10), scrY-40, 20, WHITE);
-    DrawText(TextFormat("Current throttle: %i%%", gameData->throttle), scrX-(MeasureText("Current throttle: 100%%", 20)+10), scrY-20, 20, WHITE);
+    DrawText(TextFormat("Current velocity: %.2f", Vector2Length(gameData->playerData.velocity)), scrX - (MeasureText("Current velocity: 00000", 20)+10), scrY-60, 20, WHITE);
+    DrawText(TextFormat("Current angular momentum: %.2f", gameData->playerData.angVelocity), scrX-(MeasureText("Current angular momentum: 00000", 20)+10), scrY-40, 20, WHITE);
+    DrawText(TextFormat("Current throttle: %i%%", gameData->playerData.throttle), scrX-(MeasureText("Current throttle: 100%%", 20)+10), scrY-20, 20, WHITE);
 
     /* Pause menu */
     if(gameData->paused) {

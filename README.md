@@ -16,5 +16,5 @@ Next goal is: working gameplay demonstration version
     - enemy.c/enemy.h -> enemy data structure and logic (varying enemies based on stats/data in the structure)
     - bullet.c/bullet.h -> bullet data structure and logic
 - General
-    - Add proper documentation comments
+    - Add Doxygen code documentation based on comments
 

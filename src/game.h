@@ -8,26 +8,15 @@
 #include <math.h>
 
 #include "util.h"
+#include "player.h"
 
-/* Temporarily containing all the relevant game data for the demo version
-    - TBD Should be moved and split up into more relevant parts (player module etc.)
-*/
 /** The game's main data structure, includes all data relevant to gameplay */
 typedef struct {
     /** The pause state of the game */
     short paused;
 
-    /* Player data - TODO Move away */
-    float posX, posY;
-    float rot;
-    Vector2 velocity;
-    float angMoment;
-    float accel;
-    float angAccel;
-    float rcsAccel;
-    int throttle;
-    short dampenAng;
-    Texture2D ship;
+    /** The data of the current player */
+    player_t playerData;
 
     /** Array of 3 scrolling background textures for an enhanced depth effect */
     Texture2D background [3];
@@ -50,7 +39,7 @@ void game_update(game_data_t * gameData);
 /* Render functions */
 
 /** The main render function of the game, draws (or calls the draw of) everything game-related */
-void game_render(game_data_t * gameData, int scrX, int scrY);
+void game_render(game_data_t * gameData);
 
 
 /* Load/Unload functions */
