@@ -55,7 +55,7 @@ $(OUTFILE): $(OBJECTS)
 $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 ifneq ($(NO_DEPS), true)
-	$(CC) $(CFLAGS) -MT $@ -MM $^ > $(DEPS_DIR)/$(notdir $@).dep
+	$(CC) $(CFLAGS) -MT $@ -MM $< > $(DEPS_DIR)/$(notdir $@).dep
 endif
 
 .PHONY: dirs, compile, link, run, clean, help
