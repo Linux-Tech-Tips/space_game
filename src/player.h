@@ -22,11 +22,11 @@ typedef struct {
     /** Current angular velocity of the player */
     float angVelocity;
 
-    /** The acceleration value of the main thrusters of the player */
+    /** The acceleration size of the main thrusters of the player */
     float accel;
-    /** The angular acceleration value of the player */
+    /** The angular acceleration size of the ship */
     float angAccel;
-    /** The acceleration value of the player's RCS thrusters (sideways and backwards) */
+    /** The acceleration size of the player's RCS thrusters (sideways and backwards) */
     float rcsAccel;
 
     /** The amount by which the main engines tilt to turn the ship */

@@ -11,35 +11,38 @@ void player_update(player_t * playerData) {
         playerData->throttle += 10;
     } else if(IsKeyPressed(KEY_LEFT) && playerData->throttle > 0) {
         playerData->throttle -= 10;
-    } else if(IsKeyPressed(KEY_RIGHT) && IsKeyDown(KEY_LEFT_CONTROL)) {
+    } else if(IsKeyPressed(KEY_END)) {
         playerData->throttle = 100;
-    } else if(IsKeyPressed(KEY_LEFT) && IsKeyDown(KEY_LEFT_CONTROL)) {
+    } else if(IsKeyPressed(KEY_HOME)) {
         playerData->throttle = 0;
     }
 
 
     /* Acceleration control */
     
-    /* Current throttled acceleration value */
+    /* Current throttled acceleration size */
     int tAccel = playerData->accel * (playerData->throttle/100.0f);
     /* Current angular acceleration (can change for the frame based on player input) */
     int cAngAccel = playerData->angAccel;
 
+    /* The actual acceleration vector as a local variable, based on the acceleration size and player input */
+    Vector2 accel = Vector2Zero();
+
     /* WSQE acceleration input processing */
     if(IsKeyDown(KEY_W)) {
-        playerData->velocity.x += tAccel * cos(util_toRad(playerData->rot)) * GetFrameTime();
-        playerData->velocity.y += tAccel * sin(util_toRad(playerData->rot)) * GetFrameTime();
+        accel.x += tAccel * cos(util_toRad(playerData->rot));
+        accel.y += tAccel * sin(util_toRad(playerData->rot));
         cAngAccel += (tAccel * cos(util_toRad(playerData->gimbal)));
     } else if(IsKeyDown(KEY_S)) {
-        playerData->velocity.x -= playerData->rcsAccel * cos(util_toRad(playerData->rot)) * GetFrameTime();
-        playerData->velocity.y -= playerData->rcsAccel * sin(util_toRad(playerData->rot)) * GetFrameTime();
+        accel.x -= playerData->rcsAccel * cos(util_toRad(playerData->rot));
+        accel.y -= playerData->rcsAccel * sin(util_toRad(playerData->rot));
     }
     if(IsKeyDown(KEY_Q)) {
-        playerData->velocity.x += playerData->rcsAccel * sin(util_toRad(playerData->rot)) * GetFrameTime();
-        playerData->velocity.y -= playerData->rcsAccel * cos(util_toRad(playerData->rot)) * GetFrameTime();
+        accel.x += playerData->rcsAccel * sin(util_toRad(playerData->rot));
+        accel.y -= playerData->rcsAccel * cos(util_toRad(playerData->rot));
     } else if(IsKeyDown(KEY_E)) {
-        playerData->velocity.x -= playerData->rcsAccel * sin(util_toRad(playerData->rot)) * GetFrameTime();
-        playerData->velocity.y += playerData->rcsAccel * cos(util_toRad(playerData->rot)) * GetFrameTime();
+        accel.x -= playerData->rcsAccel * sin(util_toRad(playerData->rot));
+        accel.y += playerData->rcsAccel * cos(util_toRad(playerData->rot));
     }
 
     /* AD rotation input processing */
@@ -55,18 +58,20 @@ void player_update(player_t * playerData) {
 
     /* Manual velocity killing - blocks all other forms of acceleration */
     if(IsKeyDown(KEY_LEFT_SHIFT)) {
-        if(abs(playerData->velocity.x) > 1)
-            playerData->velocity.x -= util_sign(playerData->velocity.x) * playerData->rcsAccel * GetFrameTime();
-        else
-            playerData->velocity.x = 0;
-        if(abs(playerData->velocity.y) > 1)
-            playerData->velocity.y -= util_sign(playerData->velocity.y) * playerData->rcsAccel * GetFrameTime();
-        else
-            playerData->velocity.y = 0;
+        /* Dampening velocity */
+        Vector2 decel = Vector2Scale(Vector2Normalize(playerData->velocity), playerData->rcsAccel * GetFrameTime());
+        if(Vector2Length(playerData->velocity) > Vector2Length(decel)) {
+            playerData->velocity = Vector2Subtract(playerData->velocity, decel);
+        } else {
+            playerData->velocity = Vector2Zero();
+        }
+        /* Dampening angular velocity */
         if(abs(playerData->angVelocity) > 1)
             playerData->angVelocity -= util_sign(playerData->angVelocity) * playerData->angAccel * GetFrameTime();
         else
             playerData->angVelocity = 0;
+        /* Stopping the ship from accelerating */
+        accel = Vector2Zero();
     } else if(IsKeyDown(KEY_R) || (playerData->angDampen && !(IsKeyDown(KEY_A) || IsKeyDown(KEY_D)))) {
         if(abs(playerData->angVelocity) > 1)
             playerData->angVelocity -= util_sign(playerData->angVelocity) * playerData->angAccel * GetFrameTime();
@@ -74,11 +79,10 @@ void player_update(player_t * playerData) {
             playerData->angVelocity = 0;
     }
 
-    /* Automatic dampening (if turned on) - dampens everything except desired acceleration */
-    // TODO Implement
 
+    /* Velocity, position and rotation update */
 
-    /* Position and rotation update */
+    playerData->velocity = Vector2Add(playerData->velocity, Vector2Scale(accel, GetFrameTime()));
 
     playerData->posX += playerData->velocity.x * GetFrameTime();
     playerData->posY += playerData->velocity.y * GetFrameTime();
@@ -116,11 +120,11 @@ void player_initData(player_t * playerData) {
 
     playerData->accel = 200;
     playerData->angAccel = 30;
-    playerData->rcsAccel = 60;
+    playerData->rcsAccel = 80;
     playerData->gimbal = 15;
     playerData->throttle = 100;
 
-    playerData->dampen = 0;
+    playerData->dampen = 1;
     playerData->angDampen = 1;
 
 }
