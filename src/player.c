@@ -5,6 +5,9 @@
 
 void player_update(player_t * playerData) {
 
+    /* Resetting single-use variables */
+    playerData->accel = Vector2Zero();
+
     /* Throttle control */
 
     if(IsKeyPressed(KEY_RIGHT) && playerData->throttle < 100) {
@@ -21,36 +24,33 @@ void player_update(player_t * playerData) {
     /* Acceleration control */
     
     /* Current throttled acceleration size */
-    int tAccel = playerData->accel * (playerData->throttle/100.0f);
-    /* Current angular acceleration (can change for the frame based on player input) */
-    int cAngAccel = playerData->angAccel;
-
-    /* The actual acceleration vector as a local variable, based on the acceleration size and player input */
-    Vector2 accel = Vector2Zero();
+    int tAccelVal = playerData->accelVal * (playerData->throttle/100.0f);
+    /* Angular acceleration size in the current frame (can change for the frame based on player input) */
+    int fAngAccelVal = playerData->angAccelVal;
 
     /* WSQE acceleration input processing */
     if(IsKeyDown(KEY_W)) {
-        accel.x += tAccel * cos(util_toRad(playerData->rot));
-        accel.y += tAccel * sin(util_toRad(playerData->rot));
-        cAngAccel += (tAccel * cos(util_toRad(playerData->gimbal)));
+        playerData->accel.x += tAccelVal * cos(util_toRad(playerData->rot));
+        playerData->accel.y += tAccelVal * sin(util_toRad(playerData->rot));
+        fAngAccelVal += (tAccelVal * cos(util_toRad(playerData->gimbal)));
     } else if(IsKeyDown(KEY_S)) {
-        accel.x -= playerData->rcsAccel * cos(util_toRad(playerData->rot));
-        accel.y -= playerData->rcsAccel * sin(util_toRad(playerData->rot));
+        playerData->accel.x -= playerData->rcsAccelVal * cos(util_toRad(playerData->rot));
+        playerData->accel.y -= playerData->rcsAccelVal * sin(util_toRad(playerData->rot));
     }
     if(IsKeyDown(KEY_Q)) {
-        accel.x += playerData->rcsAccel * sin(util_toRad(playerData->rot));
-        accel.y -= playerData->rcsAccel * cos(util_toRad(playerData->rot));
+        playerData->accel.x += playerData->rcsAccelVal * sin(util_toRad(playerData->rot));
+        playerData->accel.y -= playerData->rcsAccelVal * cos(util_toRad(playerData->rot));
     } else if(IsKeyDown(KEY_E)) {
-        accel.x -= playerData->rcsAccel * sin(util_toRad(playerData->rot));
-        accel.y += playerData->rcsAccel * cos(util_toRad(playerData->rot));
+        playerData->accel.x -= playerData->rcsAccelVal * sin(util_toRad(playerData->rot));
+        playerData->accel.y += playerData->rcsAccelVal * cos(util_toRad(playerData->rot));
     }
 
     /* AD rotation input processing */
     if(IsKeyDown(KEY_A)) {
-        playerData->angVelocity -= cAngAccel * GetFrameTime();
+        playerData->angVelocity -= fAngAccelVal * GetFrameTime();
     }
     if(IsKeyDown(KEY_D)) {
-        playerData->angVelocity += cAngAccel * GetFrameTime();
+        playerData->angVelocity += fAngAccelVal * GetFrameTime();
     }
 
 
@@ -59,22 +59,22 @@ void player_update(player_t * playerData) {
     /* Manual velocity killing - blocks all other forms of acceleration */
     if(IsKeyDown(KEY_LEFT_SHIFT)) {
         /* Dampening velocity */
-        Vector2 decel = Vector2Scale(Vector2Normalize(playerData->velocity), playerData->rcsAccel * GetFrameTime());
+        Vector2 decel = Vector2Scale(Vector2Normalize(playerData->velocity), playerData->rcsAccelVal);
+        /* Decelerating only as much as the velocity of the ship */
         if(Vector2Length(playerData->velocity) > Vector2Length(decel)) {
-            playerData->velocity = Vector2Subtract(playerData->velocity, decel);
+            playerData->accel = Vector2Negate(decel);
         } else {
-            playerData->velocity = Vector2Zero();
+            playerData->accel = Vector2Negate(playerData->velocity);
         }
         /* Dampening angular velocity */
-        if(abs(playerData->angVelocity) > 1)
-            playerData->angVelocity -= util_sign(playerData->angVelocity) * playerData->angAccel * GetFrameTime();
+        if(abs(playerData->angVelocity) > VELOCITY_CUTOFF_VAL)
+            playerData->angVelocity -= util_sign(playerData->angVelocity) * playerData->angAccelVal * GetFrameTime();
         else
             playerData->angVelocity = 0;
-        /* Stopping the ship from accelerating */
-        accel = Vector2Zero();
+    /* Dampening only angular velocity - manual/automatic */
     } else if(IsKeyDown(KEY_R) || (playerData->angDampen && !(IsKeyDown(KEY_A) || IsKeyDown(KEY_D)))) {
-        if(abs(playerData->angVelocity) > 1)
-            playerData->angVelocity -= util_sign(playerData->angVelocity) * playerData->angAccel * GetFrameTime();
+        if(abs(playerData->angVelocity) > VELOCITY_CUTOFF_VAL)
+            playerData->angVelocity -= util_sign(playerData->angVelocity) * playerData->angAccelVal * GetFrameTime();
         else
             playerData->angVelocity = 0;
     }
@@ -82,7 +82,12 @@ void player_update(player_t * playerData) {
 
     /* Velocity, position and rotation update */
 
-    playerData->velocity = Vector2Add(playerData->velocity, Vector2Scale(accel, GetFrameTime()));
+    playerData->velocity = Vector2Add(playerData->velocity, Vector2Scale(playerData->accel, GetFrameTime()));
+
+    /* If velocity too small, automatically kill */
+    if(Vector2Length(playerData->velocity) <= VELOCITY_CUTOFF_VAL) {
+        playerData->velocity = Vector2Zero();
+    }
 
     playerData->posX += playerData->velocity.x * GetFrameTime();
     playerData->posY += playerData->velocity.y * GetFrameTime();
@@ -118,9 +123,9 @@ void player_initData(player_t * playerData) {
     playerData->velocity = Vector2Zero();
     playerData->angVelocity = 0;
 
-    playerData->accel = 200;
-    playerData->angAccel = 30;
-    playerData->rcsAccel = 80;
+    playerData->accelVal = 200;
+    playerData->angAccelVal = 30;
+    playerData->rcsAccelVal = 80;
     playerData->gimbal = 15;
     playerData->throttle = 100;
 

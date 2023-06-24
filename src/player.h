@@ -9,6 +9,9 @@
 
 #include "util.h"
 
+/** The value at which any velocity should automatically be clipped to 0 */
+#define VELOCITY_CUTOFF_VAL 1
+
 /** Player data structure containing all player-relevant information */
 typedef struct {
 
@@ -21,13 +24,15 @@ typedef struct {
     Vector2 velocity;
     /** Current angular velocity of the player */
     float angVelocity;
+    /** Acceleration value of the current frame, reset at the start of each frame */
+    Vector2 accel;
 
     /** The acceleration size of the main thrusters of the player */
-    float accel;
+    float accelVal;
     /** The angular acceleration size of the ship */
-    float angAccel;
+    float angAccelVal;
     /** The acceleration size of the player's RCS thrusters (sideways and backwards) */
-    float rcsAccel;
+    float rcsAccelVal;
 
     /** The amount by which the main engines tilt to turn the ship */
     float gimbal;
