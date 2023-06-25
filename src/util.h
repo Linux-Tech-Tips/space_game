@@ -28,4 +28,10 @@ float util_fMax(float a, float b);
 /** Returns the smaller float */
 float util_fMin(float a, float b);
 
+/** 
+ * Provides a normal vector to the given Vector2, in a specified direction 
+ * @param dir left normal vector if -1, right if +1
+ */
+Vector2 util_normalVector2(Vector2 vec, int dir);
+
 #endif /* SG_UTIL_H */

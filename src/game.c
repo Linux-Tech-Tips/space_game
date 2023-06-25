@@ -12,8 +12,8 @@ void game_update(game_data_t * gameData) {
         gameData->bgOffsetX[i] -= gameData->playerData.velocity.x * gameData->bgScrollMul[i] * GetFrameTime();
         gameData->bgOffsetY[i] -= gameData->playerData.velocity.y * gameData->bgScrollMul[i] * GetFrameTime();
 
-        int bgW = gameData->background[i].width;
-        int bgH = gameData->background[i].height;
+        int bgW = gameData->textures.background[i].width;
+        int bgH = gameData->textures.background[i].height;
 
         if(gameData->bgOffsetX[i] > bgW)
             gameData->bgOffsetX[i] -= bgW;
@@ -23,6 +23,23 @@ void game_update(game_data_t * gameData) {
             gameData->bgOffsetY[i] -= bgH;
         else if(gameData->bgOffsetY[i] < 0)
             gameData->bgOffsetY[i] += bgH;
+    }
+
+    /* Bullet creation */
+    if(gameData->playerData.shoot) {
+        bullet_t newBullet = {0};
+        Vector2 bVelocity = Vector2Scale((Vector2){cos(util_toRad(gameData->playerData.rot)), sin(util_toRad(gameData->playerData.rot))}, 2000);
+        bullet_create(&newBullet, &gameData->textures.bullet, gameData->playerData.pos, gameData->playerData.rot, Vector2Add(gameData->playerData.velocity, bVelocity));
+        bullet_list_add(gameData->bullets, newBullet, &gameData->bulletCount, BULLET_AMOUNT);
+    }
+
+    /* Bullet update */
+    for(int i = 0; i < gameData->bulletCount; i++) {
+        bullet_update(&gameData->bullets[i]);
+        /* Removing bullets which have flown too far away from the player */
+        if(Vector2Distance(gameData->bullets[i].pos, gameData->playerData.pos) > 2500) {
+            bullet_list_remove(gameData->bullets, i, &gameData->bulletCount);
+        }
     }
 
 }
@@ -35,18 +52,28 @@ void game_render(game_data_t * gameData) {
     BeginMode2D(gameData->camera);
 
         /* Local variables to make background render more clear */
-        float playerPosX = gameData->playerData.posX;
-        float playerPosY = gameData->playerData.posY;
+        float playerPosX = gameData->playerData.pos.x;
+        float playerPosY = gameData->playerData.pos.y;
 
         /* Drawing backgrounds */
         for(int i = 0; i < 3; i++) {
-            int bgW = gameData->background[i].width;
-            int bgH = gameData->background[i].height;
+            int bgW = gameData->textures.background[i].width;
+            int bgH = gameData->textures.background[i].height;
 
-            DrawTexturePro(gameData->background[i], (Rectangle){0, 0, 9*bgW, 9*bgH}, (Rectangle){playerPosX - 4.5f*bgW + gameData->bgOffsetX[i], playerPosY - 4.5f*bgH + gameData->bgOffsetY[i], 9*bgW, 9*bgH}, (Vector2){0, 0}, 0, WHITE);
+            DrawTexturePro(
+                gameData->textures.background[i], 
+                (Rectangle){0, 0, 9*bgW, 9*bgH}, 
+                (Rectangle){playerPosX - 4.5f*bgW + gameData->bgOffsetX[i], playerPosY - 4.5f*bgH + gameData->bgOffsetY[i], 9*bgW, 9*bgH}, 
+                (Vector2){0, 0}, 
+                0, 
+                WHITE);
         }
 
         /* Render everything on top of background only after background */
+
+        /* Drawing bullets under the player */
+        for(int i = 0; i < gameData->bulletCount; i++)
+            bullet_render(gameData->bullets[i]);
 
         player_render(gameData->playerData);
 
@@ -62,7 +89,10 @@ void game_initStructure(game_data_t * gameData) {
     gameData->paused = 0;
     
     /* Player */
-    player_initData(&gameData->playerData);
+    player_initData(&gameData->playerData, &gameData->textures.playerShip);
+
+    /* Bullets */
+    gameData->bulletCount = 0;
 
     /* Backgrounds */
     for(int i = 0; i < 3; i++) {
@@ -78,18 +108,21 @@ void game_initStructure(game_data_t * gameData) {
     gameData->camera.zoom = 1.0f;
 }
 
-void game_loadTex(game_data_t * gameData) {
-    gameData->background[0] = LoadTexture("res/bg_far.png");
-    gameData->background[1] = LoadTexture("res/bg_mid.png");
-    gameData->background[2] = LoadTexture("res/bg_near.png");
-    
-    player_loadTex(&gameData->playerData);
+void game_loadTex(game_textures_t * texData) {
+    texData->background[0] = LoadTexture("res/bg_far.png");
+    texData->background[1] = LoadTexture("res/bg_mid.png");
+    texData->background[2] = LoadTexture("res/bg_near.png");
+
+    texData->playerShip = LoadTexture("res/ship.png");
+
+    texData->bullet = LoadTexture("res/bullet.png");
 }
 
-void game_unloadTex(game_data_t * gameData) {
-    UnloadTexture(gameData->background[0]);
-    UnloadTexture(gameData->background[1]);
-    UnloadTexture(gameData->background[2]);
-    
-    player_unloadTex(&gameData->playerData);
+void game_unloadTex(game_textures_t * texData) {
+    UnloadTexture(texData->background[0]);
+    UnloadTexture(texData->background[1]);
+    UnloadTexture(texData->background[2]);
+
+    UnloadTexture(texData->playerShip);
+    UnloadTexture(texData->bullet);
 }

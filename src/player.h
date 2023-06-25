@@ -16,7 +16,7 @@
 typedef struct {
 
     /** Player position */
-    float posX, posY;
+    Vector2 pos;
     /** Player orientation */
     float rot;
 
@@ -44,7 +44,15 @@ typedef struct {
     /** If true, the angular velocity is automatically dampened */
     short angDampen;
 
-    Texture2D ship;
+    /** If true, the game should create a bullet */
+    short shoot;
+    /** The delay between shots */
+    float shootDelay;
+    /** The timer deciding whether shooting available or not */
+    float shootCounter;
+
+    /** The pointer to the ship's current texture, is to be loaded elsewhere */
+    Texture2D * ship;
 
 } player_t;
 
@@ -64,12 +72,6 @@ void player_render(player_t playerData);
 /* Other functions */
 
 /** Initializes an empty player_t data structure */
-void player_initData(player_t * playerData);
-
-/** Loads all textures the player might use */
-void player_loadTex(player_t * playerData);
-
-/** Unloads all textures used by the player */
-void player_unloadTex(player_t * playerData);
+void player_initData(player_t * playerData, Texture2D * playerTex);
 
 #endif /* PLAYER_H */

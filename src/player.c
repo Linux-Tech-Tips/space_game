@@ -7,6 +7,7 @@ void player_update(player_t * playerData) {
 
     /* Resetting single-use variables */
     playerData->accel = Vector2Zero();
+    playerData->shoot = 0;
 
     /* Throttle control */
 
@@ -18,6 +19,16 @@ void player_update(player_t * playerData) {
         playerData->throttle = 100;
     } else if(IsKeyPressed(KEY_HOME)) {
         playerData->throttle = 0;
+    }
+
+    /* Shooting control */
+    if(playerData->shootCounter > 0) {
+        playerData->shootCounter -= GetFrameTime();
+    } else {
+        if(IsKeyDown(KEY_SPACE)) {
+            playerData->shoot = 1;
+            playerData->shootCounter = playerData->shootDelay;
+        }
     }
 
 
@@ -89,8 +100,7 @@ void player_update(player_t * playerData) {
         playerData->velocity = Vector2Zero();
     }
 
-    playerData->posX += playerData->velocity.x * GetFrameTime();
-    playerData->posY += playerData->velocity.y * GetFrameTime();
+    playerData->pos = Vector2Add(playerData->pos, Vector2Scale(playerData->velocity, GetFrameTime()));
     playerData->rot += playerData->angVelocity * GetFrameTime();
 
 }
@@ -99,13 +109,16 @@ void player_update(player_t * playerData) {
 /* Render functions */
 
 void player_render(player_t playerData) {
-    
+
+    int shipWidth = playerData.ship->width;
+    int shipHeight = playerData.ship->height;
+
     /* Drawing the player texture */
     DrawTexturePro(
-        playerData.ship, 
-        (Rectangle){0, 0, playerData.ship.width, playerData.ship.height}, 
-        (Rectangle){playerData.posX, playerData.posY, playerData.ship.width, playerData.ship.height}, 
-        (Vector2){playerData.ship.width/2, playerData.ship.height/2}, 
+        *playerData.ship,
+        (Rectangle){0, 0, shipWidth, shipHeight}, 
+        (Rectangle){playerData.pos.x, playerData.pos.y, shipWidth, shipHeight}, 
+        (Vector2){shipWidth/2.0f, shipHeight/2.0f}, 
         playerData.rot, 
         WHITE);
 
@@ -114,10 +127,9 @@ void player_render(player_t playerData) {
 
 /* Other functions */
 
-void player_initData(player_t * playerData) {
+void player_initData(player_t * playerData, Texture2D * playerTex) {
     
-    playerData->posX = 100;
-    playerData->posY = 100;
+    playerData->pos = (Vector2){100, 100};
     playerData->rot = 0;
 
     playerData->velocity = Vector2Zero();
@@ -132,12 +144,10 @@ void player_initData(player_t * playerData) {
     playerData->dampen = 1;
     playerData->angDampen = 1;
 
-}
+    playerData->shoot = 0;
+    playerData->shootDelay = 0.15f;
+    playerData->shootCounter = playerData->shootDelay;
 
-void player_loadTex(player_t * playerData) {
-    playerData->ship = LoadTexture("res/ship.png");
-}
+    playerData->ship = playerTex;
 
-void player_unloadTex(player_t * playerData) {
-    UnloadTexture(playerData->ship);
 }

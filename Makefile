@@ -72,7 +72,7 @@ compile: $(OBJECTS)
 
 link: $(OUTFILE)
 
-run:
+run: all
 	./$(OUTFILE)
 
 # If not specifically forbidden, cleans everything including dependency rules

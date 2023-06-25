@@ -13,8 +13,6 @@ Next goal is: working gameplay demonstration version
 - Modules
     - game.c/game.h -> only general game data (not player or enemy logic), contains player, enemies and bullets and calls their logic (+ interactions)
     - player.c/player.h -> player data structure and logic
-    - enemy.c/enemy.h -> enemy data structure and logic (varying enemies based on stats/data in the structure)
     - bullet.c/bullet.h -> bullet data structure and logic
-- General
-    - Add Doxygen code documentation based on comments
+    - enemy.c/enemy.h -> enemy data structure and logic (varying enemies based on stats/data in the structure)
 

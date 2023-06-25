@@ -32,3 +32,7 @@ float util_fMax(float a, float b) {
 float util_fMin(float a, float b) {
     return (a < b ? a : b);
 }
+
+Vector2 util_normalVector2(Vector2 vec, int dir) {
+    return (Vector2){dir * vec.y, dir * -vec.x};
+}

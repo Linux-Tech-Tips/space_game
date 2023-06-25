@@ -57,8 +57,8 @@ void _screen_update_game(screen_id_t * id, short * runWindow, short * loaded, in
     }
 
     /* Camera update according to game */
-    gameData->camera.target.x = gameData->playerData.posX;
-    gameData->camera.target.y = gameData->playerData.posY;
+    gameData->camera.target.x = gameData->playerData.pos.x;
+    gameData->camera.target.y = gameData->playerData.pos.y;
     gameData->camera.offset.x = scrX/2.0f;
     gameData->camera.offset.y = scrY/2.0f;
     //gameData->camera.rotation = -90.0f - gameData->rot;
@@ -175,7 +175,7 @@ short _screen_load_game(screen_guiData_t * guiData, game_data_t * gameData) {
     gameData->paused = 0;
 
     /* Loading textures necessary for the game */
-    game_loadTex(gameData);
+    game_loadTex(&gameData->textures);
 
     /* Returning true after loaded successfully */
     return 1;
@@ -183,7 +183,7 @@ short _screen_load_game(screen_guiData_t * guiData, game_data_t * gameData) {
 
 short _screen_unload_game(game_data_t * gameData) {
     /* Unloading textures from game after use */
-    game_unloadTex(gameData);
+    game_unloadTex(&gameData->textures);
 }
 
 
