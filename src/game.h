@@ -23,9 +23,10 @@ typedef struct {
 
     /** The player's ship */
     Texture2D playerShip;
-
-    /** The default bullet */
-    Texture2D bullet;
+    /** The exhaust of the player ship's thrusters */
+    Texture2D playerExhaust;
+    /** The player's bullet */
+    Texture2D playerBullet;
 
 } game_textures_t;
 

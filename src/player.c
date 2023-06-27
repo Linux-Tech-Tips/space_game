@@ -113,6 +113,33 @@ void player_render(player_t playerData) {
     int shipWidth = playerData.ship->width;
     int shipHeight = playerData.ship->height;
 
+    /* Drawing the texture of the exhaust if W held */
+    if(IsKeyDown(KEY_W)) {
+
+        /* Rotating exhaust if player rotates ship */
+        float exhaustRot = playerData.rot;
+        float exhaustX = playerData.pos.x; 
+        float exhaustY = playerData.pos.y;
+        if(IsKeyDown(KEY_A)) {
+            exhaustRot += playerData.gimbal;
+            exhaustX -= 10.0f * cos(util_toRad(90.0f - playerData.rot));
+            exhaustY += 10.0f * sin(util_toRad(90.0f - playerData.rot));
+        }
+        if(IsKeyDown(KEY_D)) {
+            exhaustRot -= playerData.gimbal;
+            exhaustX += 10.0f * cos(util_toRad(90.0f - playerData.rot));
+            exhaustY -= 10.0f * sin(util_toRad(90.0f - playerData.rot));
+        }
+
+        DrawTexturePro(
+            *playerData.shipExhaust,
+            (Rectangle){0, 0, shipWidth, shipHeight}, 
+            (Rectangle){exhaustX, exhaustY, shipWidth, shipHeight}, 
+            (Vector2){shipWidth/2.0f, shipHeight/2.0f},
+            exhaustRot,
+            WHITE);
+    }
+
     /* Drawing the player texture */
     DrawTexturePro(
         *playerData.ship,
@@ -127,7 +154,7 @@ void player_render(player_t playerData) {
 
 /* Other functions */
 
-void player_initData(player_t * playerData, Texture2D * playerTex) {
+void player_initData(player_t * playerData, Texture2D * playerTex, Texture2D * playerExhaustTex) {
     
     playerData->pos = (Vector2){100, 100};
     playerData->rot = 0;
@@ -135,7 +162,7 @@ void player_initData(player_t * playerData, Texture2D * playerTex) {
     playerData->velocity = Vector2Zero();
     playerData->angVelocity = 0;
 
-    playerData->accelVal = 200;
+    playerData->accelVal = 220;
     playerData->angAccelVal = 30;
     playerData->rcsAccelVal = 80;
     playerData->gimbal = 15;
@@ -149,5 +176,6 @@ void player_initData(player_t * playerData, Texture2D * playerTex) {
     playerData->shootCounter = playerData->shootDelay;
 
     playerData->ship = playerTex;
+    playerData->shipExhaust = playerExhaustTex;
 
 }

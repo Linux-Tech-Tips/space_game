@@ -28,8 +28,10 @@ void game_update(game_data_t * gameData) {
     /* Bullet creation */
     if(gameData->playerData.shoot) {
         bullet_t newBullet = {0};
+        Vector2 posOffset = Vector2Scale((Vector2){cos(util_toRad(gameData->playerData.rot)), sin(util_toRad(gameData->playerData.rot))}, 48);
+        Vector2 bPos = Vector2Add(gameData->playerData.pos, posOffset);
         Vector2 bVelocity = Vector2Scale((Vector2){cos(util_toRad(gameData->playerData.rot)), sin(util_toRad(gameData->playerData.rot))}, 2000);
-        bullet_create(&newBullet, &gameData->textures.bullet, gameData->playerData.pos, gameData->playerData.rot, Vector2Add(gameData->playerData.velocity, bVelocity));
+        bullet_create(&newBullet, &gameData->textures.playerBullet, bPos, gameData->playerData.rot, Vector2Add(gameData->playerData.velocity, bVelocity));
         bullet_list_add(gameData->bullets, newBullet, &gameData->bulletCount, BULLET_AMOUNT);
     }
 
@@ -89,7 +91,7 @@ void game_initStructure(game_data_t * gameData) {
     gameData->paused = 0;
     
     /* Player */
-    player_initData(&gameData->playerData, &gameData->textures.playerShip);
+    player_initData(&gameData->playerData, &gameData->textures.playerShip, &gameData->textures.playerExhaust);
 
     /* Bullets */
     gameData->bulletCount = 0;
@@ -113,9 +115,10 @@ void game_loadTex(game_textures_t * texData) {
     texData->background[1] = LoadTexture("res/bg_mid.png");
     texData->background[2] = LoadTexture("res/bg_near.png");
 
-    texData->playerShip = LoadTexture("res/ship.png");
+    texData->playerShip = LoadTexture("res/player.png");
+    texData->playerExhaust = LoadTexture("res/player_exhaust.png");
 
-    texData->bullet = LoadTexture("res/bullet.png");
+    texData->playerBullet = LoadTexture("res/player_bullet.png");
 }
 
 void game_unloadTex(game_textures_t * texData) {
@@ -124,5 +127,6 @@ void game_unloadTex(game_textures_t * texData) {
     UnloadTexture(texData->background[2]);
 
     UnloadTexture(texData->playerShip);
-    UnloadTexture(texData->bullet);
+    UnloadTexture(texData->playerExhaust);
+    UnloadTexture(texData->playerBullet);
 }

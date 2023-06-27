@@ -10,7 +10,7 @@
 #include "util.h"
 
 /** The value at which any velocity should automatically be clipped to 0 */
-#define VELOCITY_CUTOFF_VAL 1
+#define VELOCITY_CUTOFF_VAL 0.5f
 
 /** Player data structure containing all player-relevant information */
 typedef struct {
@@ -53,6 +53,8 @@ typedef struct {
 
     /** The pointer to the ship's current texture, is to be loaded elsewhere */
     Texture2D * ship;
+    /** The pointer to the ship's thruster exhaust texture, is to be loaded elsewhere */
+    Texture2D * shipExhaust;
 
 } player_t;
 
@@ -72,6 +74,6 @@ void player_render(player_t playerData);
 /* Other functions */
 
 /** Initializes an empty player_t data structure */
-void player_initData(player_t * playerData, Texture2D * playerTex);
+void player_initData(player_t * playerData, Texture2D * playerTex, Texture2D * playerExhaustTex);
 
 #endif /* PLAYER_H */
