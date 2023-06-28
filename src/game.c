@@ -25,7 +25,7 @@ void game_update(game_data_t * gameData) {
             gameData->bgOffsetY[i] += bgH;
     }
 
-    /* Bullet creation */
+    /* Player bullet creation */
     if(gameData->playerData.shoot) {
         bullet_t newBullet = {0};
         Vector2 posOffset = Vector2Scale((Vector2){cos(util_toRad(gameData->playerData.rot)), sin(util_toRad(gameData->playerData.rot))}, 48);
@@ -39,8 +39,17 @@ void game_update(game_data_t * gameData) {
     for(int i = 0; i < gameData->bulletCount; i++) {
         bullet_update(&gameData->bullets[i]);
         /* Removing bullets which have flown too far away from the player */
-        if(Vector2Distance(gameData->bullets[i].pos, gameData->playerData.pos) > 2500) {
+        if(Vector2Distance(gameData->bullets[i].pos, gameData->playerData.pos) > BULLET_DESPAWN_DIST) {
             bullet_list_remove(gameData->bullets, i, &gameData->bulletCount);
+        }
+    }
+
+    /* Enemy update */
+    for(int i = 0; i < gameData->enemyCount; i++) {
+        enemy_update(&gameData->enemies[i]);
+        /* Removing enemies which are too far away from the player */
+        if(Vector2Distance(gameData->enemies[i].pos, gameData->playerData.pos) > ENEMY_DESPAWN_DIST) {
+            enemy_list_remove(gameData->enemies, i, &gameData->enemyCount);
         }
     }
 
@@ -77,6 +86,10 @@ void game_render(game_data_t * gameData) {
         for(int i = 0; i < gameData->bulletCount; i++)
             bullet_render(gameData->bullets[i]);
 
+        /* Drawing enemies under the player */
+        for(int i = 0; i < gameData->enemyCount; i++)
+            enemy_render(gameData->enemies[i]);
+
         player_render(gameData->playerData);
 
     EndMode2D();
@@ -108,6 +121,11 @@ void game_initStructure(game_data_t * gameData) {
     /* Camera */
     gameData->camera = (Camera2D){0};
     gameData->camera.zoom = 1.0f;
+
+    /* TODO WIP */
+    enemy_t newEnemy = {0};
+    enemy_initData(&newEnemy, Vector2Zero(), 0, Vector2Zero(), 0, dummy, &gameData->textures.asteroid, 0);
+    enemy_list_add(gameData->enemies, newEnemy, &gameData->enemyCount, ENEMY_AMOUNT);
 }
 
 void game_loadTex(game_textures_t * texData) {
@@ -119,6 +137,8 @@ void game_loadTex(game_textures_t * texData) {
     texData->playerExhaust = LoadTexture("res/player_exhaust.png");
 
     texData->playerBullet = LoadTexture("res/player_bullet.png");
+
+    texData->asteroid = LoadTexture("res/asteroid.png");
 }
 
 void game_unloadTex(game_textures_t * texData) {
@@ -129,4 +149,6 @@ void game_unloadTex(game_textures_t * texData) {
     UnloadTexture(texData->playerShip);
     UnloadTexture(texData->playerExhaust);
     UnloadTexture(texData->playerBullet);
+
+    UnloadTexture(texData->asteroid);
 }

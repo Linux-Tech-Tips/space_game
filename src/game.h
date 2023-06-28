@@ -10,9 +10,17 @@
 #include "util.h"
 #include "player.h"
 #include "bullet.h"
+#include "enemy.h"
 
-/** The amount of bullets allowed to exist in the world at once */
+/** The maximum amount of bullets allowed to exist in the world at once */
 #define BULLET_AMOUNT 100
+/** The maximum amount of enemies allowed to exist in the world at once */
+#define ENEMY_AMOUNT 100
+
+/** The distance from the player after which a bullet despawns */
+#define BULLET_DESPAWN_DIST 2500
+/** The distance from the player after which a non-persistent enemy despawns */
+#define ENEMY_DESPAWN_DIST 3000
 
 /* NOTE: Could later be changed to be more dynamic, though for demo purposes, this is sufficient */
 /** Holds all required textures, loads the ones which are currently necessary for the game context on game load */
@@ -28,6 +36,9 @@ typedef struct {
     /** The player's bullet */
     Texture2D playerBullet;
 
+    /** An asteroid */
+    Texture2D asteroid;
+
 } game_textures_t;
 
 /** The game's main data structure, includes all data relevant to gameplay */
@@ -42,6 +53,11 @@ typedef struct {
     bullet_t bullets [BULLET_AMOUNT];
     /** The amount of the currently existing bullets */
     int bulletCount;
+
+    /** All the currently existing enemies */
+    enemy_t enemies [ENEMY_AMOUNT];
+    /** The amount of currently existing enemies */
+    int enemyCount;
 
     /** The x/y offset of the background texture in relation to the camera */
     float bgOffsetX [3], bgOffsetY [3];
