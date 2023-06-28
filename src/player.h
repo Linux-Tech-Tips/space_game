@@ -50,6 +50,16 @@ typedef struct {
     float shootDelay;
     /** The timer deciding whether shooting available or not */
     float shootCounter;
+    /** The damage player bullets do */
+    float bulletDamage;
+
+    /** The current health of the player */
+    float health;
+    /** The maximum health of the player */
+    float maxHealth;
+
+    /** The size of the circles hitbox of the player */
+    float hitboxSize;
 
     /** The pointer to the ship's current texture, is to be loaded elsewhere */
     Texture2D * ship;
@@ -67,13 +77,19 @@ void player_update(player_t * playerData);
 
 /* Render functions */
 
-/** Contains the base player draw calls */
-void player_render(player_t playerData);
+/** 
+ * Contains the base player draw calls 
+ * @param noDynamicRender if false, doesn't render thrusters based on player input
+ */
+void player_render(player_t playerData, short noDynamicRender);
 
 
 /* Other functions */
 
 /** Initializes an empty player_t data structure */
 void player_initData(player_t * playerData, Texture2D * playerTex, Texture2D * playerExhaustTex);
+
+/** Resets a player structure to new game data */
+void player_resetData(player_t * playerData);
 
 #endif /* PLAYER_H */

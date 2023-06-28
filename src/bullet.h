@@ -18,6 +18,12 @@ typedef struct {
     /** The pointer to a texture which the bullet should use, is to be loaded elsewhere and shared between bullet instances */
     Texture2D * bulletTex;
 
+    /** The size of the circular hitbox of the bullet */
+    float hitboxSize;
+
+    /* The damage the bullet applies on hit */
+    float damage;
+
 } bullet_t;
 
 
@@ -33,7 +39,7 @@ void bullet_render(bullet_t bData);
 /* Other functions */
 
 /** Fills an empty bullet data structure with the given parameters */
-void bullet_create(bullet_t * bData, Texture2D * tex, Vector2 pos, float rot, Vector2 velocity);
+void bullet_create(bullet_t * bData, Texture2D * tex, Vector2 pos, float rot, float damage, Vector2 velocity);
 
 /* Bullet list functions */
 

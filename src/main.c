@@ -52,6 +52,9 @@ int main() {
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetExitKey(0);
     SetTargetFPS(120);
+    
+    /* Seed for random generation */
+    SetRandomSeed((int)GetTime());
 
     /* All important data structure instances */
     main_appData_t appData = { .runWindow = 1, .screenId = title };

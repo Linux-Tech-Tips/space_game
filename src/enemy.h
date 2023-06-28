@@ -12,7 +12,7 @@
 /** Defines various kinds of enemies, based on which stats are assigned */
 typedef enum {
     /** Doesn't do anything */
-    dummy,
+    asteroid,
     /** Basic enemy, follows the player and shoots */
     basic
 } enemy_type_t;
@@ -56,6 +56,11 @@ typedef struct {
 
     /** If true, the enemy won't despawn */
     short persistent;
+
+    /** If health goes down to 0, the enemy disappears */
+    float health;
+    /** The radius of the enemy's circe(s) hitbox */
+    float hitboxSize;
 
     /** The pointer to the enemy ship texture, to be loaded elsewhere */
     Texture2D * ship;

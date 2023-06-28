@@ -108,13 +108,13 @@ void player_update(player_t * playerData) {
 
 /* Render functions */
 
-void player_render(player_t playerData) {
+void player_render(player_t playerData, short noDynamicRender) {
 
     int shipWidth = playerData.ship->width;
     int shipHeight = playerData.ship->height;
 
     /* Drawing the texture of the exhaust if W held */
-    if(IsKeyDown(KEY_W)) {
+    if(IsKeyDown(KEY_W) && !noDynamicRender) {
 
         /* Rotating exhaust if player rotates ship */
         float exhaustRot = playerData.rot;
@@ -174,8 +174,31 @@ void player_initData(player_t * playerData, Texture2D * playerTex, Texture2D * p
     playerData->shoot = 0;
     playerData->shootDelay = 0.15f;
     playerData->shootCounter = playerData->shootDelay;
+    playerData->bulletDamage = 40;
+
+    playerData->maxHealth = 250;
+    playerData->health = playerData->maxHealth;
+
+    playerData->hitboxSize = 24;
 
     playerData->ship = playerTex;
     playerData->shipExhaust = playerExhaustTex;
+
+}
+
+void player_resetData(player_t * playerData) {
+    
+    playerData->pos = (Vector2){100, 100};
+    playerData->rot = 0;
+
+    playerData->velocity = Vector2Zero();
+    playerData->angVelocity = 0;
+
+    playerData->throttle = 100;
+
+    playerData->shoot = 0;
+    playerData->shootCounter = playerData->shootDelay;
+
+    playerData->health = playerData->maxHealth;
 
 }

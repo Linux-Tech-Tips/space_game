@@ -19,7 +19,7 @@ typedef struct {
     /** Title screen buttons */    
     short title_buttonPlay, title_buttonSettings, title_buttonExit;
     /** Game screen buttons */
-    short game_buttonContinue, game_buttonBack;
+    short game_buttonContinue, game_buttonBack, game_buttonNew;
 } screen_guiData_t;
 
 

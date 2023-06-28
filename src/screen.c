@@ -46,33 +46,41 @@ void _screen_update_game(screen_id_t * id, short * runWindow, short * loaded, in
         *loaded = 0;
         _screen_unload_game(gameData);
     }
+    
+    /* Traditional update if not over */
+    if(!gameData->over) {
+        /* Pause menu switching logic */
+        if(IsKeyPressed(KEY_ESCAPE))
+            gameData->paused = !gameData->paused;
 
-    /* Pause menu switching logic */
-    if(IsKeyPressed(KEY_ESCAPE))
-        gameData->paused = !gameData->paused;
+        if(guiData->game_buttonContinue) {
+            gameData->paused = 0;
+            guiData->game_buttonContinue = 0; /* Make sure to reset the button once pressed */
+        }
 
-    if(guiData->game_buttonContinue) {
-        gameData->paused = 0;
-        guiData->game_buttonContinue = 0; /* Make sure to reset the button once pressed */
+        /* Camera update according to game */
+        gameData->camera.target.x = gameData->playerData.pos.x;
+        gameData->camera.target.y = gameData->playerData.pos.y;
+        gameData->camera.offset.x = scrX/2.0f;
+        gameData->camera.offset.y = scrY/2.0f;
+        //gameData->camera.rotation = -90.0f - gameData->rot;
+
+        /* Camera zoom controls */
+        if(IsKeyDown(KEY_UP) && (gameData->camera.zoom < 2)) {
+            gameData->camera.zoom += 0.5f * GetFrameTime();
+        }
+        if(IsKeyDown(KEY_DOWN) && (gameData->camera.zoom > 0.5f)) {
+            gameData->camera.zoom -= 0.5f * GetFrameTime();
+        }
+
+        if(!gameData->paused)
+            game_update(gameData);
+
+    } else {
+        if(guiData->game_buttonNew) {
+            game_resetStructure(gameData);
+        }
     }
-
-    /* Camera update according to game */
-    gameData->camera.target.x = gameData->playerData.pos.x;
-    gameData->camera.target.y = gameData->playerData.pos.y;
-    gameData->camera.offset.x = scrX/2.0f;
-    gameData->camera.offset.y = scrY/2.0f;
-    //gameData->camera.rotation = -90.0f - gameData->rot;
-
-    /* Camera zoom controls */
-    if(IsKeyDown(KEY_UP) && (gameData->camera.zoom < 2)) {
-        gameData->camera.zoom += 0.5f * GetFrameTime();
-    }
-    if(IsKeyDown(KEY_DOWN) && (gameData->camera.zoom > 0.5f)) {
-        gameData->camera.zoom -= 0.5f * GetFrameTime();
-    }
-
-    if(!gameData->paused)
-        game_update(gameData);
 }
 
 
@@ -135,12 +143,26 @@ void _screen_render_game(int scrX, int scrY, screen_guiData_t * guiData, game_da
     DrawText(TextFormat("Current angular momentum: %.2f", gameData->playerData.angVelocity), scrX-(MeasureText("Current angular momentum: 00000", 20)+10), scrY-40, 20, WHITE);
     DrawText(TextFormat("Current throttle: %i%%", gameData->playerData.throttle), scrX-(MeasureText("Current throttle: 100%%", 20)+10), scrY-20, 20, WHITE);
 
+    /* Health display */
+    DrawText("Health:", screen_textCenter("Health:", 25, scrX), scrY-60, 25, WHITE);
+    DrawRectangle(screen_elCenter(200, scrX), scrY-30, 200, 20, GRAY);
+    DrawRectangle(screen_elCenter(200, scrX), scrY-30, (gameData->playerData.health / gameData->playerData.maxHealth) * 200, 20, RED);
+
     /* Pause menu */
     if(gameData->paused) {
         DrawRectangle(0, 0, scrX, scrY, (Color){10, 10, 10, 100});
         DrawText("GAME PAUSED", screen_textCenter("GAME PAUSED", 40, scrX), 100, 40, RAYWHITE);
 
         guiData->game_buttonContinue = GuiButton((Rectangle){screen_elCenter(100, scrX), 200, 100, 40}, "Continue");
+        guiData->game_buttonBack = GuiButton((Rectangle){screen_elCenter(100, scrX), 300, 100, 40}, "Back");
+    }
+
+    /* Game over menu */
+    if(gameData->over) {
+        DrawRectangle(0, 0, scrX, scrY, (Color){10, 10, 10, 100});
+        DrawText("GAME OVER", screen_textCenter("GAME OVER", 40, scrX), 100, 40, RAYWHITE);
+
+        guiData->game_buttonNew = GuiButton((Rectangle){screen_elCenter(100, scrX), 200, 100, 40}, "New Game");
         guiData->game_buttonBack = GuiButton((Rectangle){screen_elCenter(100, scrX), 300, 100, 40}, "Back");
     }
 
@@ -170,6 +192,7 @@ short _screen_load_game(screen_guiData_t * guiData, game_data_t * gameData) {
     /* Resetting GUI data */
     guiData->game_buttonContinue = 0;
     guiData->game_buttonBack = 0;
+    guiData->game_buttonNew = 0;
 
     /* Resetting pause state */
     gameData->paused = 0;

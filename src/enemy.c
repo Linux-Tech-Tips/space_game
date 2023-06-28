@@ -12,7 +12,7 @@ void enemy_update(enemy_t * enemy) {
     
     /* Updating AI */
     switch(enemy->shipType) {
-        case dummy:
+        case asteroid:
             /* Do nothing */
             break;
         case basic:
@@ -40,7 +40,7 @@ void enemy_render(enemy_t enemy) {
     int shipHeight = enemy.ship->height;
 
     /* Drawing the texture of the exhaust if W held */
-    if(enemy.thrustersOn && enemy.shipType != dummy) {
+    if(enemy.thrustersOn && enemy.shipType != asteroid) {
 
         /* Rotating exhaust if player rotates ship */
         float exhaustRot = enemy.rot;
@@ -109,7 +109,7 @@ void enemy_initData(enemy_t * enemy, Vector2 pos, float rot, Vector2 velocity, s
     
     /* Textures */
     enemy->ship = shipTex;
-    if(shipType != dummy)
+    if(shipType != asteroid)
         enemy->shipExhaust = shipExhaustTex;
 
     /* Given stats */
@@ -122,8 +122,9 @@ void enemy_initData(enemy_t * enemy, Vector2 pos, float rot, Vector2 velocity, s
     enemy->shipType = shipType;
 
     switch(shipType) {
-        case dummy:
-            /* No stats, leave all to 0 */
+        case asteroid:
+            enemy->health = 400;
+            enemy->hitboxSize = 64;
             break;
 
         case basic:
@@ -135,6 +136,8 @@ void enemy_initData(enemy_t * enemy, Vector2 pos, float rot, Vector2 velocity, s
             enemy->gimbal = 15;
             
             enemy->shootDelay = 0.2f;
+
+            enemy->health = 250;
 
             break;
     }
