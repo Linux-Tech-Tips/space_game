@@ -35,21 +35,17 @@ void game_update(game_data_t * gameData) {
         Vector2 bPos = Vector2Add(gameData->playerData.pos, posOffset);
         Vector2 bVelocity = Vector2Scale(util_dirVector(gameData->playerData.rot), 2000);
         bullet_create(&newBullet, &gameData->textures.playerBullet, bPos, gameData->playerData.rot, gameData->playerData.bulletDamage, Vector2Add(gameData->playerData.velocity, bVelocity));
-        bullet_list_add(gameData->bullets, newBullet, &gameData->bulletCount, BULLET_AMOUNT);
+        bullet_list_add(gameData->bullets, newBullet, &gameData->bulletCount, BULLET_MAX_AMOUNT);
     }
 
     /* Bullet update */
     _game_update_bulletList(gameData);
 
     /* Enemy update */
-    float closestAst = 0;
-    _game_update_enemyList(gameData, &closestAst);
+    int asteroidCount, basicCount;
+    _game_update_enemyList(gameData, &asteroidCount, &basicCount);
 
-    /* Spawning asteroids */
-    if(closestAst > ASTEROID_SPAWN_DIST || (closestAst == 0 && gameData->enemyCount == 0)) {
-        Vector2 fieldPos = Vector2Rotate(Vector2Scale(Vector2Normalize(gameData->playerData.velocity), 4500), util_toRad(GetRandomValue(-5, 5)));
-        game_spawnAsteroidField(gameData, Vector2Add(gameData->playerData.pos, fieldPos), 3000, 15);
-    }
+    game_regenAsteroids(gameData, ASTEROID_FIELD_X, ASTEROID_FIELD_Y, ASTEROID_FIELD_AMOUNT, asteroidCount);
 
 }
 
@@ -79,14 +75,14 @@ void _game_update_bulletList(game_data_t * gameData) {
 }
 
 /* Enemy list update aux function */
-void _game_update_enemyList(game_data_t * gameData, float * closestAsteroid) {
+void _game_update_enemyList(game_data_t * gameData, int * asteroidCount, int * basicCount) {
     for(int i = 0; i < gameData->enemyCount; i++) {
         /* Standard enemy update */
         enemy_t * cEnemy = &gameData->enemies[i];
         enemy_update(cEnemy);
 
         /* Removing enemies which are too far away from the player */
-        if(Vector2Distance(cEnemy->pos, gameData->playerData.pos) > ENEMY_DESPAWN_DIST) {
+        if(Vector2Distance(cEnemy->pos, gameData->playerData.pos) > ENEMY_DESPAWN_DIST && !cEnemy->persistent) {
             enemy_list_remove(gameData->enemies, i, &gameData->enemyCount);
             continue;
         }
@@ -96,21 +92,33 @@ void _game_update_enemyList(game_data_t * gameData, float * closestAsteroid) {
             enemy_list_remove(gameData->enemies, i, &gameData->enemyCount);
             continue;
         }
-
-        /* Testing distance of asteroids */
+        
+        /* Asteroid-specific game update */
         if(cEnemy->shipType == asteroid) {
-            float dist = Vector2Distance(cEnemy->pos, gameData->playerData.pos);
-            if(dist < *closestAsteroid)
-                *closestAsteroid = dist;
+            (*asteroidCount)++;
+            /* Moving to next field unit if far away enough */
+            float xDiff = gameData->playerData.pos.x - cEnemy->pos.x;
+            if(abs(xDiff) > ASTEROID_FIELD_X / 2) {
+                cEnemy->pos.x += (ASTEROID_FIELD_X + GetRandomValue(-ASTEROID_MOVE_OFFSET, ASTEROID_MOVE_OFFSET)) * util_sign(xDiff);
+            }
+            float yDiff = gameData->playerData.pos.y - cEnemy->pos.y;
+            if(abs(yDiff) > ASTEROID_FIELD_Y / 2) {
+                cEnemy->pos.y += (ASTEROID_FIELD_Y + GetRandomValue(-ASTEROID_MOVE_OFFSET, ASTEROID_MOVE_OFFSET)) * util_sign(yDiff);
+            }
         }
         
+        /* Basic-specific game update */
+        if(cEnemy->shipType == basic) {
+            (*basicCount)++;
+        }
+
         /* Player collision */
         if(util_circleCollision(gameData->playerData.pos, gameData->playerData.hitboxSize, cEnemy->pos, cEnemy->hitboxSize)) {
-            /* TODO Bounce + damage accordingly */
+            /* Bounce colliding velocities */
             Vector2 reflectNormal = Vector2Normalize(Vector2Subtract(gameData->playerData.pos, cEnemy->pos));
             gameData->playerData.velocity = Vector2Reflect(gameData->playerData.velocity, reflectNormal);
             cEnemy->velocity = Vector2Reflect(cEnemy->velocity, reflectNormal);
-
+            /* Damage colliding objects */
             float damage = Vector2Length(gameData->playerData.velocity) + Vector2Length(cEnemy->velocity);
             cEnemy->health -= damage;
             gameData->playerData.health -= damage;
@@ -184,6 +192,10 @@ void game_initStructure(game_data_t * gameData) {
     /* Camera */
     gameData->camera = (Camera2D){0};
     gameData->camera.zoom = 1.0f;
+
+    /* Enemies */
+    gameData->enemyCount = 0;
+    game_genAsteroids(gameData, ASTEROID_FIELD_X, ASTEROID_FIELD_Y, ASTEROID_FIELD_AMOUNT);
 }
 
 void game_resetStructure(game_data_t * gameData) {
@@ -209,6 +221,7 @@ void game_resetStructure(game_data_t * gameData) {
 
     /* Enemies */
     gameData->enemyCount = 0;
+    game_genAsteroids(gameData, ASTEROID_FIELD_X, ASTEROID_FIELD_Y, ASTEROID_FIELD_AMOUNT);
 }
 
 void game_loadTex(game_textures_t * texData) {
@@ -222,6 +235,10 @@ void game_loadTex(game_textures_t * texData) {
     texData->playerBullet = LoadTexture("res/player_bullet.png");
 
     texData->asteroid = LoadTexture("res/asteroid.png");
+
+    texData->enemyShip = LoadTexture("res/enemy.png");
+    texData->enemyExhaust = LoadTexture("res/enemy_exhaust.png");
+    texData->enemyBullet = LoadTexture("res/enemy_bullet.png");
 }
 
 void game_unloadTex(game_textures_t * texData) {
@@ -234,25 +251,42 @@ void game_unloadTex(game_textures_t * texData) {
     UnloadTexture(texData->playerBullet);
 
     UnloadTexture(texData->asteroid);
+
+    UnloadTexture(texData->enemyShip);
+    UnloadTexture(texData->enemyExhaust);
+    UnloadTexture(texData->enemyBullet);
 }
 
 
-/* Spawn functions */
+/* Generation functions */
 
-void game_spawnAsteroidField(game_data_t * gameData, Vector2 pos, float radius, int asteroidCount) {
-    for(int i = 0; i < asteroidCount; i++) {
-        /* Angle and distance from center */
-        int angle = GetRandomValue(0, 360);
-        float dist = GetRandomValue(0, (int)(radius * 100)) / 100.0f;
+void game_genAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, int amount) {
+    for(int i = 0; i < amount; i++) {
+        Vector2 pos = (Vector2){GetRandomValue(-fieldSizeX/2, fieldSizeX/2), GetRandomValue(-fieldSizeY/2, fieldSizeY/2)};
 
-        Vector2 finalPos = Vector2Add(pos, Vector2Scale(Vector2Rotate((Vector2){1, 0}, util_toRad(angle)), dist));
-
-        if(Vector2Distance(finalPos, gameData->playerData.pos) < 128) {
-            finalPos = Vector2Add(finalPos, Vector2Scale(Vector2Normalize(util_dirVector(gameData->playerData.rot)), 256));
+        if(Vector2Distance(gameData->playerData.pos, pos) < 128) {
+            pos = Vector2Add(pos, Vector2Rotate((Vector2){128, 0}, GetRandomValue(0, 2*PI)));
         }
 
-        enemy_t newEnemy = {0};
-        enemy_initData(&newEnemy, finalPos, 0, Vector2Zero(), 0, asteroid, &gameData->textures.asteroid, 0);
-        enemy_list_add(gameData->enemies, newEnemy, &gameData->enemyCount, ENEMY_AMOUNT);
+        enemy_t newEnemy = {};
+        enemy_initData(&newEnemy, pos, GetRandomValue(0, 360), Vector2Zero(), 0, asteroid, &gameData->textures.asteroid, 0);
+        enemy_list_add(gameData->enemies, newEnemy, &gameData->enemyCount, ENEMY_MAX_AMOUNT);
+    }
+}
+
+void game_regenAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, int maxAmount, int cAmount) {
+    /* Checking if there is space for another asteroid */
+    int diff = maxAmount - cAmount;
+    if(diff >= ASTEROID_REGEN_TRIGGER) {
+        /* Generating a random amount of asteroids to fit */
+        int toRegen = GetRandomValue(1, diff);
+        for(int i = 0; i < toRegen; i++) {
+            /* Here, arbitrary default screen size is used as offset, could be changed for more control later */
+            Vector2 pos = (Vector2){gameData->playerData.pos.x + GetRandomValue(1600, 1600 + fieldSizeX), gameData->playerData.pos.y + GetRandomValue(900, 900 + fieldSizeY)};
+
+            enemy_t newEnemy = {};
+            enemy_initData(&newEnemy, pos, GetRandomValue(0, 360), Vector2Zero(), 0, asteroid, &gameData->textures.asteroid, 0);
+            enemy_list_add(gameData->enemies, newEnemy, &gameData->enemyCount, ENEMY_MAX_AMOUNT);
+        }
     }
 }

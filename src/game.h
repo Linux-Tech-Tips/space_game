@@ -13,17 +13,25 @@
 #include "enemy.h"
 
 /** The maximum amount of bullets allowed to exist in the world at once */
-#define BULLET_AMOUNT 100
+#define BULLET_MAX_AMOUNT 100
 /** The maximum amount of enemies allowed to exist in the world at once */
-#define ENEMY_AMOUNT 100
+#define ENEMY_MAX_AMOUNT 100
 
 /** The distance from the player after which a bullet despawns */
 #define BULLET_DESPAWN_DIST 2500
 /** The distance from the player after which a non-persistent enemy despawns */
 #define ENEMY_DESPAWN_DIST 5000
 
-/** The distance from the player after which new asteroids should spawn */
-#define ASTEROID_SPAWN_DIST 500
+/** The X unit dimension of the repeating asteroid field */
+#define ASTEROID_FIELD_X 8000
+/** The Y unit dimension of the repeating asteroid field */
+#define ASTEROID_FIELD_Y 8000
+/** The amount of asteroids in the unit quad */
+#define ASTEROID_FIELD_AMOUNT 40
+/** By how much an asteroid can shift when changing position between field units */
+#define ASTEROID_MOVE_OFFSET 64
+/** How many asteroids have to be missing to regenerate the field */
+#define ASTEROID_REGEN_TRIGGER 10
 
 /* NOTE: Could later be changed to be more dynamic, though for demo purposes, this is sufficient */
 /** Holds all required textures, loads the ones which are currently necessary for the game context on game load */
@@ -42,6 +50,13 @@ typedef struct {
     /** An asteroid */
     Texture2D asteroid;
 
+    /** Basic enemy ship */
+    Texture2D enemyShip;
+    /** Basic enemy ship thrusters exhaust */
+    Texture2D enemyExhaust;
+    /** Basic enemy bullet */
+    Texture2D enemyBullet;
+
 } game_textures_t;
 
 /** The game's main data structure, includes all data relevant to gameplay */
@@ -55,12 +70,12 @@ typedef struct {
     player_t playerData;
 
     /** All the currently existing bullets */
-    bullet_t bullets [BULLET_AMOUNT];
+    bullet_t bullets [BULLET_MAX_AMOUNT];
     /** The amount of the currently existing bullets */
     int bulletCount;
 
     /** All the currently existing enemies */
-    enemy_t enemies [ENEMY_AMOUNT];
+    enemy_t enemies [ENEMY_MAX_AMOUNT];
     /** The amount of currently existing enemies */
     int enemyCount;
 
@@ -85,7 +100,7 @@ void game_update(game_data_t * gameData);
 /** Updates all the bullets in the list (including collisions) */
 void _game_update_bulletList(game_data_t * gameData);
 /** Updates all the enemies in the list (including collisions) */
-void _game_update_enemyList(game_data_t * gameData, float * closestAsteroid);
+void _game_update_enemyList(game_data_t * gameData, int * asteroidCount, int * basicCount);
 
 
 /* Render functions */
@@ -109,12 +124,11 @@ void game_loadTex(game_textures_t * texData);
 void game_unloadTex(game_textures_t * texData);
 
 
-/* Spawn functions */
+/* Generation functions */
 
-/** 
- * Spawns an asteroid field according to the given parameters 
- * @param density how many asteroids per 1 square unit of area
- */
-void game_spawnAsteroidField(game_data_t * gameData, Vector2 pos, float radius, int asteroidCount);
+void game_genAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, int amount);
+
+void game_regenAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, int maxAmount, int cAmount);
+
 
 #endif /* GAME_H */

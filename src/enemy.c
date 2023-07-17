@@ -132,6 +132,8 @@ void enemy_initData(enemy_t * enemy, Vector2 pos, float rot, Vector2 velocity, s
             enemy->accelVal = 195;
             enemy->angAccelVal = 40;
             enemy->rcsAccelVal = 100;
+
+            enemy->hitboxSize = 64;
             
             enemy->gimbal = 15;
             
