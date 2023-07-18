@@ -22,12 +22,15 @@
 /** The distance from the player after which a non-persistent enemy despawns */
 #define ENEMY_DESPAWN_DIST 5000
 
+/** How strongly should object collisions damage the objects */
+#define COLLISION_DAMAGE_MUL 0.2f
+
 /** The X unit dimension of the repeating asteroid field */
 #define ASTEROID_FIELD_X 8000
 /** The Y unit dimension of the repeating asteroid field */
 #define ASTEROID_FIELD_Y 8000
 /** The amount of asteroids in the unit quad */
-#define ASTEROID_FIELD_AMOUNT 40
+#define ASTEROID_FIELD_AMOUNT 20
 /** By how much an asteroid can shift when changing position between field units */
 #define ASTEROID_MOVE_OFFSET 64
 /** How many asteroids have to be missing to regenerate the field */
@@ -78,6 +81,21 @@ typedef struct {
     enemy_t enemies [ENEMY_MAX_AMOUNT];
     /** The amount of currently existing enemies */
     int enemyCount;
+    /** The amount of the enemies of the basic type */
+    int basicCount;
+
+    /** The timer for the spawning of new enemies */
+    float enemySpawnCooldown;
+    /** The delay between enemy waves, decreases over time */
+    float enemySpawnDelay;
+    /** The default delay between waves */
+    float defEnemySpawnDelay;
+    /** Which wave the player is on */
+    int wave;
+    /** How many enemies the player has killed */
+    int score;
+    /** The best score so far */
+    int highScore;
 
     /** The x/y offset of the background texture in relation to the camera */
     float bgOffsetX [3], bgOffsetY [3];
@@ -130,5 +148,6 @@ void game_genAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, i
 
 void game_regenAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, int maxAmount, int cAmount);
 
+void game_genEnemies(game_data_t * gameData, int minDist, int radius, int amount, enemy_type_t enemyType, Vector2 defVelocity);
 
 #endif /* GAME_H */

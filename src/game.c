@@ -42,9 +42,25 @@ void game_update(game_data_t * gameData) {
     _game_update_bulletList(gameData);
 
     /* Enemy update */
-    int asteroidCount = 0, basicCount = 0;
-    _game_update_enemyList(gameData, &asteroidCount, &basicCount);
+    int asteroidCount = 0;
+    gameData->basicCount = 0;
+    _game_update_enemyList(gameData, &asteroidCount, &gameData->basicCount);
 
+    /* New enemy wave logic */
+    if(gameData->basicCount == 0) {
+        if(gameData->enemySpawnCooldown > 0) {
+            gameData->enemySpawnCooldown -= GetFrameTime();
+        } else {
+            gameData->wave += 1;
+            if(gameData->enemySpawnDelay > 1)
+                gameData->enemySpawnDelay -= 0.5f;
+
+            gameData->enemySpawnCooldown = gameData->enemySpawnDelay;
+            game_genEnemies(gameData, 2000, 4000, round(pow(2 * gameData->wave, 0.5f)), basic, gameData->playerData.velocity);
+        }
+    }
+
+    /* Regenerating asteroids, in case too many destroyed by the player */
     game_regenAsteroids(gameData, ASTEROID_FIELD_X, ASTEROID_FIELD_Y, ASTEROID_FIELD_AMOUNT, asteroidCount);
 
 }
@@ -62,21 +78,41 @@ void _game_update_bulletList(game_data_t * gameData) {
             continue;
         }
 
-        /* Collision testing (player if enemy bullet, enemy if not) */
-        if(cBullet->isEnemy) {
-            if(util_circleCollision(cBullet->pos, cBullet->hitboxSize, gameData->playerData.pos, gameData->playerData.hitboxSize)) {
-                gameData->playerData.health -= cBullet->damage;
-                bullet_list_remove(gameData->bullets, i, &gameData->bulletCount);
-            }
-        } else {
-            for(int j = 0; j < gameData->enemyCount; j++) {
+        /* Player collision testing */
+        if(cBullet->isEnemy && util_circleCollision(cBullet->pos, cBullet->hitboxSize, gameData->playerData.pos, gameData->playerData.hitboxSize)) {
+            gameData->playerData.health -= cBullet->damage;
+            bullet_list_remove(gameData->bullets, i, &gameData->bulletCount);
+            continue;
+        }
+
+        /* Enemy collision testing */
+        for(int j = 0; j < gameData->enemyCount; j++) {
                 enemy_t * cEnemy = &gameData->enemies[j];
+                
+                /* Ignoring basic enemies if enemy bullet */
+                if(cBullet->isEnemy && (cEnemy->shipType == basic)) {
+                    continue;
+                }
+                
+                /* Testing collision */
                 if(util_circleCollision(cBullet->pos, cBullet->hitboxSize, cEnemy->pos, cEnemy->hitboxSize)) {
                     cEnemy->health -= cBullet->damage;
+
+                    /* Add player score if bullet killed enemy */
+                    if(cEnemy->health <= 0 && !cBullet->isEnemy) {
+                        /* Adding score on enemy death */
+                        if(cEnemy->shipType == asteroid)
+                            gameData->score += 5;
+                        if(cEnemy->shipType == basic)
+                            gameData->score += 20;
+                        /* Updating high score on kill if necessary */
+                        if(gameData->score > gameData->highScore)
+                            gameData->highScore = gameData->score;
+                    }
+
                     bullet_list_remove(gameData->bullets, i, &gameData->bulletCount);
                     break;
                 }
-            }
         }
     }
 }
@@ -137,9 +173,32 @@ void _game_update_enemyList(game_data_t * gameData, int * asteroidCount, int * b
             gameData->playerData.velocity = Vector2Reflect(gameData->playerData.velocity, reflectNormal);
             cEnemy->velocity = Vector2Reflect(cEnemy->velocity, reflectNormal);
             /* Damage colliding objects */
-            float damage = Vector2Length(gameData->playerData.velocity) + Vector2Length(cEnemy->velocity);
+            float damage = (Vector2Length(gameData->playerData.velocity) + Vector2Length(cEnemy->velocity)) * COLLISION_DAMAGE_MUL;
             cEnemy->health -= damage;
             gameData->playerData.health -= damage;
+        }
+
+        /* Enemy-enemy collision */
+        for(int j = 0; j < gameData->enemyCount; j++) {
+            enemy_t * cEnemy2 = &gameData->enemies[j];
+            /* Dismissing self-collision cases */
+            if(cEnemy == cEnemy2) {
+                continue;
+            }
+            /* Dismissing asteroid-asteroid collisions */
+            if(cEnemy->shipType == asteroid && cEnemy2->shipType == asteroid)
+                continue;
+            
+            if(util_circleCollision(cEnemy->pos, cEnemy->hitboxSize, cEnemy2->pos, cEnemy2->hitboxSize)) {
+                /* Bounce colliding velocities */
+                Vector2 reflectNormal = Vector2Normalize(Vector2Subtract(cEnemy->pos, cEnemy2->pos));
+                cEnemy->velocity = Vector2Reflect(cEnemy->velocity, reflectNormal);
+                cEnemy2->velocity = Vector2Reflect(cEnemy2->velocity, reflectNormal);
+                /* Damage colliding objects */
+                float damage = (Vector2Length(cEnemy->velocity) + Vector2Length(cEnemy2->velocity)) * COLLISION_DAMAGE_MUL;
+                cEnemy->health -= damage;
+                cEnemy2->health -= damage;
+            }
         }
     }
 }
@@ -215,9 +274,12 @@ void game_initStructure(game_data_t * gameData) {
     gameData->enemyCount = 0;
     game_genAsteroids(gameData, ASTEROID_FIELD_X, ASTEROID_FIELD_Y, ASTEROID_FIELD_AMOUNT);
 
-    enemy_t testEnemy = {};
-    enemy_initData(&testEnemy, (Vector2){-400, -400}, 0, Vector2Zero(), 1, basic, &gameData->textures.enemyShip, &gameData->textures.enemyExhaust);
-    enemy_list_add(gameData->enemies, testEnemy, &gameData->enemyCount, ENEMY_MAX_AMOUNT);
+    gameData->defEnemySpawnDelay = 5.5f;
+    gameData->enemySpawnDelay = gameData->defEnemySpawnDelay;
+    gameData->enemySpawnCooldown = 0;
+    gameData->wave = 0;
+    gameData->score = 0;
+    gameData->highScore = 0;
 }
 
 void game_resetStructure(game_data_t * gameData) {
@@ -245,9 +307,10 @@ void game_resetStructure(game_data_t * gameData) {
     gameData->enemyCount = 0;
     game_genAsteroids(gameData, ASTEROID_FIELD_X, ASTEROID_FIELD_Y, ASTEROID_FIELD_AMOUNT);
 
-    enemy_t testEnemy = {};
-    enemy_initData(&testEnemy, (Vector2){-400, -400}, 0, Vector2Zero(), 1, basic, &gameData->textures.enemyShip, &gameData->textures.enemyExhaust);
-    enemy_list_add(gameData->enemies, testEnemy, &gameData->enemyCount, ENEMY_MAX_AMOUNT);
+    gameData->enemySpawnDelay = gameData->defEnemySpawnDelay;
+    gameData->enemySpawnCooldown = 0;
+    gameData->wave = 0;
+    gameData->score = 0;
 }
 
 void game_loadTex(game_textures_t * texData) {
@@ -314,5 +377,18 @@ void game_regenAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY,
             enemy_initData(&newEnemy, pos, GetRandomValue(0, 360), Vector2Zero(), 1, asteroid, &gameData->textures.asteroid, 0);
             enemy_list_add(gameData->enemies, newEnemy, &gameData->enemyCount, ENEMY_MAX_AMOUNT);
         }
+    }
+}
+
+void game_genEnemies(game_data_t * gameData, int minDist, int radius, int amount, enemy_type_t enemyType, Vector2 defVelocity) {
+    for(int i = 0; i < amount; i++) {
+        float angle = GetRandomValue(0, 360);
+        float distance = GetRandomValue(minDist, radius);
+
+        Vector2 newPos = Vector2Add(gameData->playerData.pos, Vector2Scale(util_dirVector(angle), distance));
+
+        enemy_t newEnemy = {};
+        enemy_initData(&newEnemy, newPos, GetRandomValue(0, 360), defVelocity, 0, basic, &gameData->textures.enemyShip, &gameData->textures.enemyExhaust);
+        enemy_list_add(gameData->enemies, newEnemy, &gameData->enemyCount, ENEMY_MAX_AMOUNT);
     }
 }

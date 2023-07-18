@@ -103,7 +103,7 @@ void enemy_basicAI(enemy_t * enemy, Vector2 playerPos, float playerRot) {
     /* The distance the enemy would spend decelerating with the current velocity and accel value */
     float decelDist = pow(Vector2Length(enemy->velocity), 2) / (2 * enemy->accelVal);
 
-    /* If far enough away, accelerate, otherwise decelerate */
+    /* If far enough away and facing player, accelerate, otherwise decelerate */
     if(decelDist < (dist - BASIC_STOP_DIST) && abs(rotDiff) < 25) {
         enemy->accel = Vector2Scale(util_dirVector(enemy->rot), enemy->accelVal);
         enemy->thrustersOn = 1;
@@ -111,8 +111,8 @@ void enemy_basicAI(enemy_t * enemy, Vector2 playerPos, float playerRot) {
         enemy->accel = Vector2Scale(Vector2Normalize(enemy->velocity), -enemy->rcsAccelVal);
     }
 
-    /* Shoot if close enough */
-    if(dist < (10 * BASIC_STOP_DIST) && abs(rotDiff) < 90) {
+    /* Shoot if close enough and facing player */
+    if(dist < (10 * BASIC_STOP_DIST) && abs(rotDiff) < 60) {
         if(enemy->shootCounter <= 0) {
             enemy->shoot = 1;
             enemy->shootCounter = enemy->shootDelay;
@@ -167,7 +167,7 @@ void enemy_initData(enemy_t * enemy, Vector2 pos, float rot, Vector2 velocity, s
         case basic:
 
             enemy->accelVal = 195;
-            enemy->angAccelVal = 150;
+            enemy->angAccelVal = 200;
             enemy->rcsAccelVal = 100;
 
             enemy->hitboxSize = 64;

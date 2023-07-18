@@ -122,6 +122,11 @@ void _screen_render_game(int scrX, int scrY, screen_guiData_t * guiData, game_da
     /* Demo reminder up top */
     DrawText("INCOMPLETE (DEMONSTRATION) VERSION", screen_textCenter("INCOMPLETE (DEMONSTRATION) VERSION", 40, scrX), 15, 40, WHITE);
 
+    /* Score, waves display */
+    DrawText(TextFormat("Score: %i, High score: %i", gameData->score, gameData->highScore), 10, 10, 20, WHITE);
+    DrawText(TextFormat("Wave: %i, Enemies: %i", gameData->wave, gameData->basicCount), 10, 30, 20, WHITE);
+    DrawText(TextFormat("Next wave in: %.2f s", gameData->enemySpawnCooldown), 10, 50, 20, WHITE);
+
     /* Controls text */
     DrawText("Controls:", 10, scrY-160, 20, WHITE);
     DrawText("W/S - Accelerate forwards/backwards", 10, scrY-140, 20, WHITE);
