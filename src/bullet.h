@@ -12,6 +12,9 @@ typedef struct {
     /** The current rotation of the bullet */
     float rot;
 
+    /** Whether the bullet was shot by an enemy */
+    short isEnemy;
+
     /** The current velocity of the bullet */
     Vector2 velocity;
 
@@ -39,7 +42,7 @@ void bullet_render(bullet_t bData);
 /* Other functions */
 
 /** Fills an empty bullet data structure with the given parameters */
-void bullet_create(bullet_t * bData, Texture2D * tex, Vector2 pos, float rot, float damage, Vector2 velocity);
+void bullet_create(bullet_t * bData, Texture2D * tex, Vector2 pos, float rot, short isEnemy, float damage, Vector2 velocity);
 
 /* Bullet list functions */
 

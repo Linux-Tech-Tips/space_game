@@ -1,6 +1,8 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 
+#include <stdlib.h>
+
 #include <raylib.h>
 #include <raymath.h>
 
@@ -8,6 +10,9 @@
 
 /** The value at which any velocity should automatically be clipped to 0 */
 #define VELOCITY_CUTOFF_VAL 0.5f
+
+/** The distance from the player at which the basic enemy type stops */
+#define BASIC_STOP_DIST 128
 
 /** Defines various kinds of enemies, based on which stats are assigned */
 typedef enum {
@@ -48,6 +53,8 @@ typedef struct {
     float shootDelay;
     /** The timer for the shooting delay */
     float shootCounter;
+    /** The amount of damage the enemy's bullet should do */
+    float bulletDamage;
 
     /** State variable, if true, the enemy's main thrusters are on */
     short thrustersOn;
@@ -76,7 +83,7 @@ typedef struct {
 /* Update and render functions */
 
 /** Contains the base enemy update logic, updates the enemy's movement and AI */
-void enemy_update(enemy_t * enemy);
+void enemy_update(enemy_t * enemy, Vector2 playerPos, float playerRot);
 
 /** Contains the base enemy draw calls */
 void enemy_render(enemy_t enemy);
@@ -85,7 +92,7 @@ void enemy_render(enemy_t enemy);
 /* AI functions */
 
 /** The AI of the basic enemy type */
-void enemy_basicAI(enemy_t * enemy);
+void enemy_basicAI(enemy_t * enemy, Vector2 playerPos, float playerRot);
 
 
 /* Enemy list functions */

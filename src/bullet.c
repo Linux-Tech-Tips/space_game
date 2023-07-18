@@ -26,11 +26,13 @@ void bullet_render(bullet_t bData) {
 
 /* Other functions */
 
-void bullet_create(bullet_t * bData, Texture2D * tex, Vector2 pos, float rot, float damage, Vector2 velocity) {
+void bullet_create(bullet_t * bData, Texture2D * tex, Vector2 pos, float rot, short isEnemy, float damage, Vector2 velocity) {
     
     bData->pos = pos;
     bData->rot = rot;
     bData->velocity = velocity;
+
+    bData->isEnemy = isEnemy;
     
     bData->bulletTex = tex;
 
