@@ -1,3 +1,12 @@
+/**
+ * @file screen.h
+ * @author Linux-Tech-Tips
+ * @brief Screen logic and GUI draw functions
+ *
+ * Contains functions providing screen-related logic and GUI draw calls.
+ * The data structure @ref screen_guiData_t allows transfering of immediate mode GUI states from the draw functions to the update logic.
+ */
+
 #ifndef SCREEN_H
 #define SCREEN_H
 

@@ -1,3 +1,13 @@
+/**
+ * @file game.h
+ * @author Linux-Tech-Tips
+ * @brief General game data and logic
+ *
+ * Contains general game data (the @ref game_data_t data structure) and logic.
+ * Encapsulates the player, enemies and bullets, calls their logic and allows their interaction.
+ * Not responsible for specific logic of the structures contained within.
+ */
+
 #ifndef GAME_H
 #define GAME_H
 
@@ -144,10 +154,20 @@ void game_unloadTex(game_textures_t * texData);
 
 /* Generation functions */
 
+/** 
+ * Generates an asteroid field of a rectangle with the given parameters, with the center at (0,0).
+ * Corrects asteroid positions to not generate within an existing player instance.
+ */
 void game_genAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, int amount);
 
+/** 
+ * If less asteroids than the given threshold @ref ASTEROID_REGEN_TRIGGER exist, a randomly selected amount are recreated. 
+ * The newly regenerated asteroids are contained within a rectangle with the center at the position of the player.
+ * Positions of the structures are corrected to not appear within the camera's viewport.
+ */
 void game_regenAsteroids(game_data_t * gameData, int fieldSizeX, int fieldSizeY, int maxAmount, int cAmount);
 
+/** Creates a wave of enemies with the given parameters */
 void game_genEnemies(game_data_t * gameData, int minDist, int radius, int amount, enemy_type_t enemyType, Vector2 defVelocity);
 
 #endif /* GAME_H */

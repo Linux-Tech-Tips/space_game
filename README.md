@@ -1,18 +1,23 @@
-# Space game (Demo so far)
+# Space Demo
 
-Simple space game, made in C using Raylib
+A simple demo version of a kind of space game, made with C using [Raylib](https://github.com/raysan5/raylib) and [Raygui](https://github.com/raysan5/raygui).
 
-Right now, the game is very early in development, and is basically an incomplete demo
+Developed and tested on (GNU) Linux, but should work on Windows as well with the appropriate libraries.
 
-Developed and tested on (GNU) Linux, should work on Windows as well
+## The purpose of this project
 
-## TODO
+The project is, in the first place, not meant to be a full-featured game. It is a demo, and will probably remain a demo for the forseeable future.
 
-Next goal is: working gameplay demonstration version
- 
-- Modules
-    - game.c/game.h -> only general game data (not player or enemy logic), contains player, enemies and bullets and calls their logic (+ interactions)
-    - player.c/player.h -> player data structure and logic
-    - bullet.c/bullet.h -> bullet data structure and logic
-    - enemy.c/enemy.h -> enemy data structure and logic (varying enemies based on stats/data in the structure)
+The reason to write this, then, is as a learning experience, to gain more experience with the C language. And, of course, just for fun as well.
 
+While meant as just a test/learning project, it is shared here, in case anybody is interested. Either in the project itself, or in my programming.
+
+## Drawbacks
+
+As a demo, the project is severely limited in various aspects.
+
+The enemy AI is not what it could be. They keep crashing into asteroids. The movement could be improved. The score could be improved. The visuals could be improved.
+
+However, through all that, the code is fairly structured, and can be built upon in the future, if desired.
+
+As a demonstration project, I believe it fits its given role decently well.

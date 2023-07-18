@@ -1,3 +1,13 @@
+/**
+ * @file player.h
+ * @author Linux-Tech-Tips
+ * @brief Bullet data and functions
+ *
+ * Contains the @ref player_t data structure and its functions.
+ * The functions provide update logic and draw calls for the player instance.
+ * Interaction logic between the player and other structures is contained within @ref game.h
+ */
+
 #ifndef PLAYER_H
 #define PLAYER_H
 

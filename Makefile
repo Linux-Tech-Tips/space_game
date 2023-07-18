@@ -6,6 +6,7 @@ BUILD_DIR := build
 SOURCE_DIR := src
 OUTFILE := space_test.elf
 DEPS_DIR := .dependencies
+DOCS_DIR := doxygen_doc
 
 # Default compiler flags (none for now)
 CFLAGS :=
@@ -58,12 +59,13 @@ ifneq ($(NO_DEPS), true)
 	$(CC) $(CFLAGS) -MT $@ -MM $< > $(DEPS_DIR)/$(notdir $@).dep
 endif
 
-.PHONY: dirs, compile, link, run, clean, help
+.PHONY: dirs, compile, link, run, doc, clean, help
 
 # SOURCE_DIR is not made, expected to already exist
 # If not specifically forbidden, creates the dependency targets directory as well
 dirs:
 	mkdir -p $(BUILD_DIR)
+	mkdir -p $(DOCS_DIR)
 ifneq ($(NO_DEPS), true)
 	mkdir -p $(DEPS_DIR)
 endif
@@ -75,17 +77,21 @@ link: $(OUTFILE)
 run: all
 	./$(OUTFILE)
 
+doc:
+	doxygen Doxyfile
+
 # If not specifically forbidden, cleans everything including dependency rules
 clean:
-	rm -r $(BUILD_DIR)
-	rm -f $(OUTFILE)
+	-rm -r $(BUILD_DIR)
+	-rm -f $(OUTFILE)
+	-rm -r $(DOCS_DIR)
 ifneq ($(NO_DEPS), true)
-	rm -r $(DEPS_DIR)
+	-rm -r $(DEPS_DIR)
 endif
 
 help:
 	@echo "Demo space game Makefile: make [target] [options]"
-	@echo "  - Available targets: dirs, compile, link, run, clean, help, all (default, does dirs, compile and link)"
+	@echo "  - Available targets: dirs, compile, link, run, doc, clean, help, all (default, does dirs, compile and link)"
 	@echo "  - Available options:"
 	@echo "    - address=true - turn on address sanitizer"
 	@echo "    - RAYGUI=<path> - specify custom path to the raygui.h header"
@@ -94,6 +100,9 @@ help:
 	@echo "        (note: expects a path to the 'raylib' folder without trailing slash, containing lib and include)"
 	@echo "        (note: by default, this flag isn't set and the makefile expects raylib installed in the system)"
 	@echo "    - NO_DEPS=true - turn off additional dependency targets"
+	@echo "  - Documentation information:"
+	@echo "    - The target doc generates code documentation using Doxygen, and requires Doxygen and Graphviz to be installed"
+	@echo "    - Created documents can be found in html (file index.html) or tex (file refman.tex) format in the folder doxygen_doc, in their respective folders"
 
 
 -include $(DEPS_DIR)/*.dep

@@ -1,3 +1,14 @@
+/**
+ * @file enemy.h
+ * @author Linux-Tech-Tips
+ * @brief Enemy data and functions
+ *
+ * Contains the @ref enemy_t data structure and its functions.
+ * The functions provide update logic and draw calls for any singular enemy instance.
+ * Functions prefixed with enemy_list_ contain logic tied to a C array of enemy instances.
+ * Interaction logic between enemies and other structures is contained within @ref game.h
+ */
+
 #ifndef ENEMY_H
 #define ENEMY_H
 

@@ -1,3 +1,12 @@
+/**
+ * @file util.h
+ * @author Linux-Tech-Tips
+ * @brief Various utility functions
+ *
+ * Contains various utility functions used within the rest of the Space Demo code.
+ * Most functions are related to mathematical concepts not implemented in the @ref math.h or @ref raymath.h modules.
+ */
+
 #ifndef SG_UTIL_H
 #define SG_UTIL_H
 

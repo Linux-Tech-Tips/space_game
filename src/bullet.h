@@ -1,3 +1,14 @@
+/**
+ * @file bullet.h
+ * @author Linux-Tech-Tips
+ * @brief Bullet data and functions
+ *
+ * Contains the @ref bullet_t data structure and its functions.
+ * The functions provide update logic and draw calls for any singular bullet instance.
+ * Functions prefixed with bullet_list_ contain logic tied to a C array of bullet instances.
+ * Interaction logic between bullets and other structures is contained within @ref game.h
+ */
+
 #ifndef BULLET_H
 #define BULLET_H
 
