@@ -148,6 +148,16 @@ void _screen_render_game(int scrX, int scrY, screen_guiData_t * guiData, game_da
     DrawText(TextFormat("Current angular momentum: %.2f", gameData->playerData.angVelocity), scrX-(MeasureText("Current angular momentum: 00000", 20)+10), scrY-40, 20, WHITE);
     DrawText(TextFormat("Current throttle: %i%%", gameData->playerData.throttle), scrX-(MeasureText("Current throttle: 100%%", 20)+10), scrY-20, 20, WHITE);
 
+    /* Enemy pointers display */
+    for(int i = 0; i < gameData->enemyCount; i++) {
+        if(gameData->enemies[i].shipType != asteroid) {
+            Vector2 dir = Vector2Normalize(Vector2Subtract(gameData->enemies[i].pos, gameData->playerData.pos));
+            Vector2 screenCenter = (Vector2){scrX/2.0f, scrY/2.0f};
+            float diff = 10 * pow(0.9995f, Vector2Distance(gameData->enemies[i].pos, gameData->playerData.pos));
+            DrawLineEx(Vector2Add(screenCenter, Vector2Scale(dir, 90)), Vector2Add(screenCenter, Vector2Scale(dir, 90 + diff)), 24 - 2.0f * diff, RED);
+        }
+    }
+
     /* Health display */
     DrawText("Health:", screen_textCenter("Health:", 25, scrX), scrY-60, 25, WHITE);
     DrawRectangle(screen_elCenter(200, scrX), scrY-30, 200, 20, GRAY);
